@@ -1,0 +1,10 @@
+{
+  "name": "TalkToWorld - Language Learning Partner",
+  "description": "Real-time conversational AI partner for interactive language practice, roleplays, pronunciation coaching, and instant grammar feedback on talktoworld.co.in.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

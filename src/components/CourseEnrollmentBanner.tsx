@@ -51,7 +51,7 @@ export const CourseEnrollmentBanner: React.FC<CourseEnrollmentBannerProps> = ({
             className="px-3 py-1.5 rounded-lg bg-white hover:bg-[#F5F5F0] border border-[#C5DAC8] text-xs font-semibold text-[#2D5438] flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>View Receipt ({enrollment.transactionId || 'Rs. 499 Paid'})</span>
+            <span>View Receipt ({enrollment.transactionId || `Rs. ${enrollment.amountPaid || 999} Paid`})</span>
           </button>
         </div>
       </div>
@@ -65,22 +65,22 @@ export const CourseEnrollmentBanner: React.FC<CourseEnrollmentBannerProps> = ({
         <div className="space-y-2.5 max-w-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FDF6EE] border border-[#F3DFC8] text-[#8C521C] text-xs font-bold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 text-[#C28E58]" />
-            <span>1 Free Practice Included per Language</span>
+            <span>Free Sample for Each Language • 10% Immediate Discount</span>
           </div>
 
           <h2 className="text-lg sm:text-xl font-bold text-[#2C2C24]">
-            Try 1 Exercise Free in Each Language • Full Course for <span className="line-through text-[#8A8A7A]">Rs. 4,999/-</span> <span className="text-[#2D5438] font-mono">Rs. 499/-</span>
+            Try a Sample Free in Each Language • Full Course for <span className="line-through text-[#8A8A7A]">Rs. 9,999/-</span> <span className="text-[#2D5438] font-mono">Rs. 999/-</span>
           </h2>
 
           <p className="text-xs sm:text-sm text-[#5A5A40] leading-relaxed">
-            Practice your first scenario free across Spanish, French, Japanese, German, Italian, and Mandarin. To continue onto the next practices, custom AI scenarios, and full curriculum, enroll with the <strong>90% OFF Special Pass (Rs. 499/-)</strong>.
+            Practice an individual free sample scenario in each language. After completion, check your <strong>Diagnostic Performance Indicators</strong> and claim an exclusive <strong>10% Immediate Joining Discount (Rs. 899/-)</strong>!
           </p>
 
           {/* Quick Value Highlights */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 text-xs text-[#3D3D30]">
             <div className="flex items-center gap-1.5 font-medium">
               <Check className="w-3.5 h-3.5 text-[#4A6B53] stroke-[2.5]" />
-              <span>1 Free Starter Practice in All 6 Languages</span>
+              <span>1 Free Starter Practice in All 12 Languages</span>
             </div>
             <div className="flex items-center gap-1.5 font-medium">
               <Check className="w-3.5 h-3.5 text-[#4A6B53] stroke-[2.5]" />
@@ -88,7 +88,7 @@ export const CourseEnrollmentBanner: React.FC<CourseEnrollmentBannerProps> = ({
             </div>
             <div className="flex items-center gap-1.5 font-medium">
               <Check className="w-3.5 h-3.5 text-[#4A6B53] stroke-[2.5]" />
-              <span>Instant UPI (talwarvikasaxisbank@axl)</span>
+              <span>Instant UPI &amp; Cards (GPay, PhonePe, Paytm)</span>
             </div>
           </div>
         </div>
@@ -97,10 +97,10 @@ export const CourseEnrollmentBanner: React.FC<CourseEnrollmentBannerProps> = ({
         <div className="flex flex-col items-start lg:items-end gap-2.5 shrink-0">
           <div className="flex items-baseline gap-2">
             <span className="text-xs font-semibold text-[#8A8A7A] line-through decoration-[#B84242] decoration-2">
-              Rs. 4,999/-
+              Rs. 9,999/-
             </span>
             <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#2D5438]">
-              Rs. 499/-
+              Rs. 999/-
             </span>
           </div>
 
@@ -111,7 +111,7 @@ export const CourseEnrollmentBanner: React.FC<CourseEnrollmentBannerProps> = ({
             className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#4A6B53] hover:bg-[#3E5A45] active:bg-[#344C3A] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
           >
             <Lock className="w-4 h-4" />
-            <span>Unlock All Next Practices (Rs. 499)</span>
+            <span>Unlock Full Course Pass (Rs. 999)</span>
             <ArrowRight className="w-4 h-4" />
           </button>
           

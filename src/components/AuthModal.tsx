@@ -44,12 +44,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   
   // Google sign in state
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [selectedGoogleAccount, setSelectedGoogleAccount] = useState('talwarvikas76@gmail.com');
+  const [selectedGoogleAccount, setSelectedGoogleAccount] = useState('learner@talktoworld.co.in');
 
   // Email state
-  const [email, setEmail] = useState('talwarvikas76@gmail.com');
+  const [email, setEmail] = useState('learner@talktoworld.co.in');
   const [password, setPassword] = useState('••••••••');
-  const [name, setName] = useState('Vikas Talwar');
+  const [name, setName] = useState('Language Learner');
   const [showPassword, setShowPassword] = useState(false);
   const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -93,8 +93,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setEmailError(null);
 
     setTimeout(() => {
-      const emailToUse = selectedEmail || selectedGoogleAccount || 'talwarvikas76@gmail.com';
-      const nameToUse = customName || (emailToUse.includes('talwar') ? 'Vikas Talwar' : emailToUse.split('@')[0]);
+      const emailToUse = selectedEmail || selectedGoogleAccount || 'learner@talktoworld.co.in';
+      const nameToUse = customName || (emailToUse.includes('student') ? 'Language Student' : 'Language Learner');
       
       const loggedInUser: UserProfile = {
         id: `usr_google_${Date.now()}`,
@@ -358,7 +358,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 type="button"
                 id="google-signin-primary-btn"
                 disabled={isGoogleLoading}
-                onClick={() => handleGoogleSignIn('talwarvikas76@gmail.com', 'Vikas Talwar')}
+                onClick={() => handleGoogleSignIn('learner@talktoworld.co.in', 'Language Learner')}
                 className="w-full py-3 px-4 rounded-xl bg-white hover:bg-[#F9F9F6] active:bg-[#F0EFEA] border-2 border-[#DCDCCF] hover:border-[#4A6B53] text-[#2C2C24] font-bold text-sm shadow-xs flex items-center justify-center gap-3 transition-all cursor-pointer active:scale-98 disabled:opacity-60"
               >
                 {isGoogleLoading ? (
@@ -400,16 +400,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <div className="space-y-2">
                   <button
                     type="button"
-                    onClick={() => handleGoogleSignIn('talwarvikas76@gmail.com', 'Vikas Talwar')}
+                    onClick={() => handleGoogleSignIn('learner@talktoworld.co.in', 'Language Learner')}
                     className="w-full p-2.5 rounded-xl border border-[#E3E3D8] hover:border-[#4A6B53] bg-[#FAF9F5] hover:bg-white flex items-center justify-between transition-all cursor-pointer text-left"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-full bg-[#2D5438] text-white font-bold text-xs flex items-center justify-center">
-                        VT
+                        LL
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-[#2C2C24]">Vikas Talwar</div>
-                        <div className="text-[11px] text-[#5A5A40]">talwarvikas76@gmail.com</div>
+                        <div className="text-xs font-bold text-[#2C2C24]">Language Learner</div>
+                        <div className="text-[11px] text-[#5A5A40]">learner@talktoworld.co.in</div>
                       </div>
                     </div>
                     <span className="text-[10px] text-[#4A6B53] font-bold bg-[#E9F0EA] px-2 py-0.5 rounded border border-[#C5DAC8]">
@@ -536,7 +536,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                           required
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          placeholder="e.g. Vikas Talwar"
+                          placeholder="e.g. Alex Morgan"
                           className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#FFFFFF] border border-[#DCDCCF] text-xs font-medium text-[#2C2C24] focus:outline-none focus:border-[#4A6B53]"
                         />
                       </div>

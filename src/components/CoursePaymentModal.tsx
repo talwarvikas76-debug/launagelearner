@@ -31,6 +31,8 @@ interface CoursePaymentModalProps {
   userEmail?: string;
   user?: UserProfile | null;
   onOpenAuthModal?: () => void;
+  initialDiscountApplied?: boolean;
+  discountReason?: string;
 }
 
 type PaymentTab = 'upi' | 'card' | 'netbanking' | 'wallet';
@@ -41,33 +43,67 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
   onPaymentSuccess,
   currentLanguage,
   targetScenarioTitle,
-  userEmail = 'talwarvikas76@gmail.com',
+  userEmail = 'learner@talktoworld.co.in',
   user,
   onOpenAuthModal,
+  initialDiscountApplied = false,
+  discountReason,
 }) => {
   const [activeTab, setActiveTab] = useState<PaymentTab>('upi');
   
   // Customer details
-  const [payerName, setPayerName] = useState(user?.name || 'Vikas Talwar');
-  const [payerEmail, setPayerEmail] = useState(user?.email || userEmail || 'talwarvikas76@gmail.com');
+  const [payerName, setPayerName] = useState(user?.name && !user.name.includes('Vikas') ? user.name : 'Student Learner');
+  const [payerEmail, setPayerEmail] = useState(user?.email && !user.email.includes('talwar') ? user.email : userEmail || 'learner@talktoworld.co.in');
   const [payerPhone, setPayerPhone] = useState(user?.phoneNumber?.replace(/\D/g, '') || '9876543210');
+
+  // Discount and promo state
+  const [isDiscountApplied, setIsDiscountApplied] = useState(initialDiscountApplied);
+  const [couponCodeInput, setCouponCodeInput] = useState(initialDiscountApplied ? 'IMMEDIATE10' : '');
+  const [couponFeedback, setCouponFeedback] = useState<string | null>(
+    initialDiscountApplied ? '10% Immediate Post-Sample Discount Applied! Save Rs. 100' : null
+  );
+
+  useEffect(() => {
+    if (initialDiscountApplied) {
+      setIsDiscountApplied(true);
+      setCouponCodeInput('IMMEDIATE10');
+      setCouponFeedback('10% Immediate Post-Sample Discount Applied! Save Rs. 100');
+    }
+  }, [initialDiscountApplied, isOpen]);
+
+  const finalAmount = isDiscountApplied ? 899 : 999;
+  const baseFee = (finalAmount / 1.18).toFixed(2);
+  const gstFee = (finalAmount - Number(baseFee)).toFixed(2);
+
+  const handleApplyCoupon = () => {
+    const clean = couponCodeInput.trim().toUpperCase();
+    if (clean === 'IMMEDIATE10' || clean === 'SAMPLE10' || clean === 'JOIN10') {
+      setIsDiscountApplied(true);
+      setCouponFeedback('✓ 10% Immediate Discount applied successfully! Total is now Rs. 899/-');
+    } else if (clean === '') {
+      setIsDiscountApplied(false);
+      setCouponFeedback(null);
+    } else {
+      setCouponFeedback('Invalid code. Use IMMEDIATE10 for your 10% post-sample discount.');
+    }
+  };
 
   useEffect(() => {
     if (user) {
-      if (user.name) setPayerName(user.name);
-      if (user.email) setPayerEmail(user.email);
+      if (user.name && !user.name.includes('Vikas')) setPayerName(user.name);
+      if (user.email && !user.email.includes('talwar')) setPayerEmail(user.email);
       if (user.phoneNumber) setPayerPhone(user.phoneNumber.replace(/\D/g, ''));
     }
   }, [user, isOpen]);
   
-  // Payment Form States - Defaulting to registered user UPI: talwarvikasaxisbank@axl
-  const [upiId, setUpiId] = useState('talwarvikasaxisbank@axl');
+  // Payment Form States
+  const [upiId, setUpiId] = useState('talktoworld@axisbank');
   const [selectedUpiApp, setSelectedUpiApp] = useState<'axis' | 'gpay' | 'phonepe' | 'paytm' | 'other'>('axis');
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [cardNumber, setCardNumber] = useState('4532 8921 4455 1920');
   const [cardExpiry, setCardExpiry] = useState('08/29');
   const [cardCvv, setCardCvv] = useState('789');
-  const [cardName, setCardName] = useState('Vikas Talwar');
+  const [cardName, setCardName] = useState('Student Learner');
   const [selectedBank, setSelectedBank] = useState('Axis Bank');
   const [selectedWallet, setSelectedWallet] = useState('Paytm');
 
@@ -83,7 +119,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
     setProcessingStatus('Securing 256-bit encrypted checkout...');
 
     setTimeout(() => {
-      setProcessingStatus('Verifying payment of Rs. 499/- with bank...');
+      setProcessingStatus(`Verifying payment of Rs. ${finalAmount}/- with bank...`);
     }, 900);
 
     setTimeout(() => {
@@ -97,7 +133,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
 
       const newEnrollment: CourseEnrollment = {
         isEnrolled: true,
-        amountPaid: 499,
+        amountPaid: finalAmount,
         currency: 'INR',
         enrolledAt: now,
         transactionId: txnId,
@@ -138,11 +174,11 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                   Course Enrollment Checkout
                 </h2>
                 <span className="px-2 py-0.5 rounded-full bg-[#E9F0EA] text-[#2D5438] text-[10px] font-bold uppercase tracking-wider border border-[#C5DAC8]">
-                  90% OFF Pass
+                  {isDiscountApplied ? '80% + 10% Immediate OFF' : '80% OFF Pass'}
                 </span>
               </div>
               <p className="text-xs text-[#5A5A40]">
-                1 free exercise per language included • Unlock full curriculum for <span className="line-through text-[#8A8A7A]">Rs. 4,999/-</span> <span className="font-bold text-[#2D5438] text-sm">Rs. 499/-</span>
+                1 free sample per language included • Unlock full curriculum for <span className="line-through text-[#8A8A7A]">Rs. 4,999/-</span> <span className="font-bold text-[#2D5438] text-sm">Rs. {finalAmount}/-</span>
               </p>
             </div>
           </div>
@@ -170,8 +206,30 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                   <Sparkles className="w-4 h-4 text-[#C28E58] shrink-0 mt-0.5" />
                   <div className="text-xs text-[#8C521C]">
                     <span className="font-bold">Next Practice Locked:</span> 1 free exercise is included for every language. To practice{' '}
-                    <span className="font-semibold text-[#2C2C24]">&ldquo;{targetScenarioTitle}&rdquo;</span> and unlock all 50+ roleplays, custom AI scenario builder, and certifications across all 6 languages, enroll below for <span className="line-through">Rs. 4,999/-</span> <span className="font-bold text-[#2D5438]">Rs. 499/-</span>.
+                    <span className="font-semibold text-[#2C2C24]">&ldquo;{targetScenarioTitle}&rdquo;</span> and unlock all 50+ roleplays, custom AI scenario builder, and certifications across all 12 languages, enroll below for <span className="line-through">Rs. 4,999/-</span> <span className="font-bold text-[#2D5438]">Rs. {finalAmount}/-</span>.
                   </div>
+                </div>
+              )}
+
+              {/* 10% Immediate Post-Sample Discount Alert */}
+              {isDiscountApplied && (
+                <div className="p-3.5 rounded-xl bg-[#E9F0EA] border border-[#C5DAC8] flex items-center justify-between gap-3 animate-in fade-in">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-[#2D5438] text-white flex items-center justify-center shrink-0">
+                      <Sparkles className="w-4 h-4 text-amber-300" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-[#2D5438]">
+                        🎉 10% Immediate Post-Sample Discount Applied!
+                      </div>
+                      <p className="text-[11px] text-[#3D5C45]">
+                        Applied via promo code <strong className="font-mono">{couponCodeInput || 'IMMEDIATE10'}</strong>. You save an extra Rs. 100 on lifetime access!
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full bg-white text-[#2D5438] text-xs font-bold font-mono border border-[#C5DAC8] shrink-0">
+                    -Rs. 100.00
+                  </span>
                 </div>
               )}
 
@@ -187,20 +245,20 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                       AI Language Immersion &amp; Practice Pass
                     </h3>
                     <p className="text-xs text-[#5A5A40] mt-0.5">
-                      1 Free Exercise / Language • All 6 Languages • CEFR A1–C1 • Lifetime Full Access
+                      1 Free Sample / Language • All 12 Languages • CEFR A1–C1 • Lifetime Full Access
                     </p>
                   </div>
 
-                  {/* Price Tag with 4999 strike-through and 499 charged */}
+                  {/* Price Tag */}
                   <div className="sm:text-right shrink-0 bg-white sm:bg-transparent p-3 sm:p-0 rounded-lg border sm:border-0 border-[#E3E3D8]">
                     <div className="text-xs font-semibold text-[#8A8A7A] line-through decoration-[#B84242] decoration-2">
                       Original: Rs. 4,999/-
                     </div>
                     <div className="text-2xl sm:text-3xl font-extrabold text-[#2D5438] font-mono">
-                      Rs. 499/-
+                      Rs. {finalAmount}/-
                     </div>
                     <div className="text-[10px] text-[#4A6B53] font-bold uppercase tracking-wider bg-[#E9F0EA] px-2 py-0.5 rounded border border-[#C5DAC8] inline-block">
-                      90% OFF • Save Rs. 4,500/-
+                      {isDiscountApplied ? '80% + 10% Extra OFF • Save Rs. 4,100/-' : '80% OFF • Save Rs. 4,000/-'}
                     </div>
                   </div>
                 </div>
@@ -209,11 +267,11 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-3 text-xs text-[#3D3D30]">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-[#4A6B53] shrink-0" />
-                    <span>Unlimited AI Spoken Scenario Practice</span>
+                    <span>Unlimited AI Spoken Scenario Practice (All 12 Languages)</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-[#4A6B53] shrink-0" />
-                    <span>Real-Time Grammar &amp; Fluency Scoring</span>
+                    <span>Real-Time Performance Indicators &amp; Scoring</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-[#4A6B53] shrink-0" />
@@ -231,6 +289,32 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                     <CheckCircle2 className="w-4 h-4 text-[#4A6B53] shrink-0" />
                     <span>PDF Performance Reports &amp; Audio Export</span>
                   </div>
+                </div>
+
+                {/* Promo Coupon Bar */}
+                <div className="mt-3 pt-3 border-t border-[#E3E3D8] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 flex-1">
+                    <span className="text-xs font-semibold text-[#5A5A40]">Promo Voucher:</span>
+                    <input
+                      type="text"
+                      placeholder="e.g. IMMEDIATE10"
+                      value={couponCodeInput}
+                      onChange={(e) => setCouponCodeInput(e.target.value)}
+                      className="px-2.5 py-1.5 rounded-lg border border-[#DCDCCF] bg-white text-xs font-mono uppercase text-[#2C2C24] w-36 focus:outline-none focus:border-[#4A6B53]"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      className="px-3 py-1.5 rounded-lg bg-[#FAF9F5] hover:bg-[#EBEBE0] border border-[#DCDCCF] text-xs font-bold text-[#2C2C24] cursor-pointer"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                  {couponFeedback && (
+                    <span className={`text-[11px] font-medium ${isDiscountApplied ? 'text-[#2D5438]' : 'text-[#8C521C]'}`}>
+                      {couponFeedback}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -296,7 +380,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
               {/* Payment Methods Tabs */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#5A5A40] mb-2.5">
-                  Select Payment Method (Rs. 499/-)
+                  Select Payment Method (Rs. {finalAmount}/-)
                 </label>
                 
                 <div className="grid grid-cols-4 gap-2 mb-4">
@@ -370,10 +454,10 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                           Official Merchant &amp; Beneficiary UPI ID
                         </div>
                         <div className="text-xs font-mono font-bold text-[#2D5438] mt-0.5">
-                          talwarvikasaxisbank@axl
+                          talktoworld@axisbank
                         </div>
                         <div className="text-[11px] text-[#5A5A40]">
-                          Beneficiary: <span className="font-medium text-[#2C2C24]">Vikas Talwar</span> • Axis Bank
+                          Beneficiary: <span className="font-medium text-[#2C2C24]">TalkToWorld Academy</span> • Axis Bank
                         </div>
                       </div>
 
@@ -381,7 +465,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                         type="button"
                         id="copy-upi-id-btn"
                         onClick={() => {
-                          navigator.clipboard.writeText('talwarvikasaxisbank@axl');
+                          navigator.clipboard.writeText('talktoworld@axisbank');
                           setCopiedUpi(true);
                           setTimeout(() => setCopiedUpi(false), 2000);
                         }}
@@ -404,10 +488,10 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                     {/* UPI App Selection */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {[
-                        { id: 'axis', name: 'Axis Bank / AXL', handle: 'axl', customId: 'talwarvikasaxisbank@axl' },
-                        { id: 'gpay', name: 'Google Pay', handle: 'okhdfcbank', customId: 'vikas@okhdfcbank' },
-                        { id: 'phonepe', name: 'PhonePe', handle: 'ybl', customId: 'vikas@ybl' },
-                        { id: 'paytm', name: 'Paytm UPI', handle: 'paytm', customId: 'vikas@paytm' },
+                        { id: 'axis', name: 'Axis Bank / AXL', handle: 'axl', customId: 'talktoworld@axisbank' },
+                        { id: 'gpay', name: 'Google Pay', handle: 'okhdfcbank', customId: 'talktoworld@okhdfcbank' },
+                        { id: 'phonepe', name: 'PhonePe', handle: 'ybl', customId: 'talktoworld@ybl' },
+                        { id: 'paytm', name: 'Paytm UPI', handle: 'paytm', customId: 'talktoworld@paytm' },
                       ].map((app) => (
                         <button
                           key={app.id}
@@ -437,7 +521,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                         value={upiId}
                         onChange={(e) => setUpiId(e.target.value)}
                         className="w-full px-3 py-2 rounded-lg bg-[#FFFFFF] border border-[#DCDCCF] text-xs font-mono font-bold text-[#2C2C24] focus:outline-none focus:border-[#4A6B53]"
-                        placeholder="talwarvikasaxisbank@axl"
+                        placeholder="talktoworld@axisbank"
                       />
                     </div>
                   </div>
@@ -541,7 +625,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                   <ShieldCheck className="w-4 h-4 text-[#4A6B53]" />
                   <span>256-bit SSL Encrypted &amp; RBI Compliant Payment Gateway</span>
                 </div>
-                <span className="font-semibold text-[#2C2C24]">Amount: Rs. 499/- (Inclusive of GST)</span>
+                <span className="font-semibold text-[#2C2C24]">Amount: Rs. {finalAmount}/- (Inclusive of GST)</span>
               </div>
             </>
           )}
@@ -569,7 +653,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#5A5A40]">Amount:</span>
-                  <span className="font-bold text-[#2D5438]">Rs. 499/-</span>
+                  <span className="font-bold text-[#2D5438]">Rs. {finalAmount}/-</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#5A5A40]">Payer:</span>
@@ -590,7 +674,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                   Course Enrollment Successful!
                 </h3>
                 <p className="text-xs text-[#3D5C45] max-w-md mx-auto">
-                  Payment of <span className="font-bold">Rs. 499/-</span> confirmed. You now have full lifetime access to all spoken roleplay practices, custom scenario builders, and AI tutoring.
+                  Payment of <span className="font-bold">Rs. {completedEnrollment.amountPaid}/-</span> confirmed. You now have full lifetime access to all spoken roleplay practices, custom scenario builders, and AI tutoring across all 12 languages.
                 </p>
               </div>
 
@@ -602,7 +686,7 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                     <span>Payment Receipt &amp; Student Pass</span>
                   </div>
                   <span className="font-mono font-bold text-[#2D5438] bg-white px-2 py-0.5 rounded border border-[#C5DAC8]">
-                    PAID • Rs. 499.00
+                    PAID • Rs. {completedEnrollment.amountPaid}.00
                   </span>
                 </div>
 
@@ -629,16 +713,16 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
                   </div>
                   <div>
                     <span className="text-[#5A5A40] block">Merchant / Payee VPA</span>
-                    <span className="font-mono font-bold text-[#2D5438]">talwarvikasaxisbank@axl</span>
+                    <span className="font-mono font-bold text-[#2D5438]">talktoworld@axisbank</span>
                   </div>
                   <div>
                     <span className="text-[#5A5A40] block">Access Level</span>
-                    <span className="font-bold text-[#2D5438]">Lifetime Unlocked</span>
+                    <span className="font-bold text-[#2D5438]">Lifetime Unlocked (12 Languages)</span>
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-[#E3E3D8] flex items-center justify-between text-[11px] text-[#5A5A40]">
-                  <span>Base Fee: Rs. 422.88 + 18% GST: Rs. 76.12 = Total Rs. 499/-</span>
+                  <span>Base Fee: Rs. {baseFee} + 18% GST: Rs. {gstFee} = Total Rs. {completedEnrollment.amountPaid}/-</span>
                   <button
                     type="button"
                     onClick={handlePrintReceipt}
@@ -668,12 +752,12 @@ export const CoursePaymentModal: React.FC<CoursePaymentModalProps> = ({
 
               <button
                 type="button"
-                id="confirm-pay-499-btn"
+                id="confirm-pay-btn"
                 onClick={handleProcessPayment}
                 className="px-6 py-2.5 rounded-xl bg-[#4A6B53] hover:bg-[#3E5A45] active:bg-[#344C3A] text-white text-xs sm:text-sm font-bold shadow-md transition-all flex items-center gap-2 active:scale-98 cursor-pointer"
               >
                 <Lock className="w-4 h-4" />
-                <span>Pay Rs. 499/- &amp; Unlock Full Course</span>
+                <span>Pay Rs. {finalAmount}/- &amp; Unlock Full Course</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </>

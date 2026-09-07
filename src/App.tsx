@@ -136,7 +136,7 @@ export default function App() {
     return getDefaultDailyGoal();
   });
 
-  // Course Enrollment State (Payment Gate: Rs. 499/-)
+  // Course Enrollment State (Payment Gate: Rs. 999/-)
   const [enrollment, setEnrollment] = useState<CourseEnrollment>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.COURSE_ENROLLMENT);
@@ -148,7 +148,7 @@ export default function App() {
     }
     return {
       isEnrolled: false,
-      amountPaid: 499,
+      amountPaid: 999,
       currency: 'INR',
     };
   });
@@ -158,7 +158,14 @@ export default function App() {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed?.name?.includes('Vikas') || parsed?.email?.includes('talwar')) {
+          parsed.name = 'Language Learner';
+          parsed.email = 'learner@talktoworld.co.in';
+          parsed.photoUrl = 'https://api.dicebear.com/7.x/initials/svg?seed=Language%20Learner&backgroundColor=4A6B53&textColor=ffffff';
+          localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(parsed));
+        }
+        return parsed;
       }
     } catch (e) {
       console.warn('Could not parse auth user:', e);
@@ -166,10 +173,10 @@ export default function App() {
     // Default logged in demo profile for immediate seamless preview
     return {
       id: 'usr_google_default',
-      name: 'Vikas Talwar',
-      email: 'talwarvikas76@gmail.com',
+      name: 'Language Learner',
+      email: 'learner@talktoworld.co.in',
       phoneNumber: '+91 9876543210',
-      photoUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=Vikas%20Talwar&backgroundColor=4A6B53&textColor=ffffff',
+      photoUrl: 'https://api.dicebear.com/7.x/initials/svg?seed=Language%20Learner&backgroundColor=4A6B53&textColor=ffffff',
       provider: 'google',
       isLoggedIn: true,
       createdAt: '2026-08-01T00:00:00.000Z',
@@ -294,11 +301,21 @@ export default function App() {
     setUser(null);
   };
 
-  const handleOpenPaymentModal = (targetScenarioTitle?: string, pendingScenario?: Scenario) => {
+  const [paymentDiscountApplied, setPaymentDiscountApplied] = useState(false);
+  const [paymentDiscountReason, setPaymentDiscountReason] = useState<string | undefined>(undefined);
+
+  const handleOpenPaymentModal = (
+    targetScenarioTitle?: string,
+    pendingScenario?: Scenario,
+    withDiscount?: boolean,
+    discountReason?: string
+  ) => {
     setPaymentTargetScenario(targetScenarioTitle);
     if (pendingScenario) {
       setPendingScenarioToStart(pendingScenario);
     }
+    setPaymentDiscountApplied(!!withDiscount);
+    setPaymentDiscountReason(discountReason || (withDiscount ? 'Sample Session 10% Completion Bonus (IMMEDIATE10)' : undefined));
     setIsPaymentModalOpen(true);
   };
 
@@ -328,7 +345,7 @@ export default function App() {
 
   // Start a new conversation session
   const handleSelectScenario = async (scenario: Scenario, bypassEnrollmentCheck: boolean = false) => {
-    // 1 Free exercise per language is allowed (e.g. cafe-order). Subsequent practices require enrollment (Rs. 499/-)
+    // 1 Free exercise per language is allowed (e.g. cafe-order). Subsequent practices require enrollment (Rs. 999/-)
     const isFreeScenario = scenario.id === 'cafe-order' || scenario.id === DEFAULT_SCENARIOS[0]?.id;
     if (!enrollment.isEnrolled && !isFreeScenario && !bypassEnrollmentCheck) {
       handleOpenPaymentModal(scenario.title, scenario);
@@ -797,7 +814,14 @@ export default function App() {
             if (activeScenario) handleSelectScenario(activeScenario);
           }}
           enrollment={enrollment}
-          onOpenPaymentModal={() => handleOpenPaymentModal()}
+          onOpenPaymentModal={(withDiscount) => {
+            handleOpenPaymentModal(
+              undefined,
+              undefined,
+              withDiscount !== false,
+              'Sample Session 10% Completion Bonus (IMMEDIATE10)'
+            );
+          }}
         />
       )}
 
@@ -809,18 +833,22 @@ export default function App() {
         onSaveGoal={handleSaveGoal}
       />
 
-      {/* Course Enrollment & Payment Gate Modal (Rs. 499/-) */}
+      {/* Course Enrollment & Payment Gate Modal (Rs. 999/-) */}
       <CoursePaymentModal
         isOpen={isPaymentModalOpen}
         onClose={() => {
           setIsPaymentModalOpen(false);
           setPendingScenarioToStart(null);
+          setPaymentDiscountApplied(false);
+          setPaymentDiscountReason(undefined);
         }}
         onPaymentSuccess={handlePaymentSuccess}
         currentLanguage={currentLanguage}
         targetScenarioTitle={paymentTargetScenario}
         user={user}
         onOpenAuthModal={() => handleOpenAuthModal('google')}
+        initialDiscountApplied={paymentDiscountApplied}
+        discountReason={paymentDiscountReason}
       />
 
       {/* Authentication Modal (Google, Email, Mobile OTP) */}

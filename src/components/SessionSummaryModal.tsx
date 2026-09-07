@@ -30,7 +30,8 @@ interface SessionSummaryModalProps {
   onClose: () => void;
   onRestartScenario: () => void;
   enrollment?: CourseEnrollment;
-  onOpenPaymentModal?: () => void;
+  onOpenPaymentModal?: (withDiscount?: boolean) => void;
+  isFreeSample?: boolean;
 }
 
 export const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
@@ -43,6 +44,7 @@ export const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
   onRestartScenario,
   enrollment,
   onOpenPaymentModal,
+  isFreeSample = true,
 }) => {
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [isExportingBundle, setIsExportingBundle] = useState(false);
@@ -112,37 +114,54 @@ export const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#2C2C24]/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
       <div className="relative w-full max-w-2xl rounded-2xl bg-[#FFFFFF] border border-[#E3E3D8] shadow-2xl p-6 sm:p-8 my-8 max-h-[90vh] overflow-y-auto text-[#2C2C24] scrollbar-thin">
-        {/* Top Trophy Banner */}
+        {/* Top Performance Indicators Banner */}
         <div className="text-center mb-6">
           <div className="w-16 h-16 rounded-2xl bg-[#FDF6EE] border border-[#F3DFC8] flex items-center justify-center text-[#C28E58] mx-auto mb-3 shadow-xs">
             <Trophy className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-bold text-[#2C2C24]">Practice Session Completed!</h2>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E9F0EA] border border-[#C5DAC8] text-[#2D5438] text-xs font-bold uppercase tracking-wider mb-2">
+            <Sparkles className="w-3.5 h-3.5 text-[#4A6B53]" />
+            <span>{language.flag} {language.name} Sample Completed • Diagnostic Performance Indicators</span>
+          </div>
+          <h2 className="text-2xl font-bold text-[#2C2C24]">Your Spoken Performance Indicators</h2>
           <p className="text-xs sm:text-sm text-[#5A5A40] mt-1">
-            {report.scenarioTitle} • {report.languageName} ({report.level})
+            {report.scenarioTitle} • Calibrated for CEFR {report.level} Spoken Mastery
           </p>
         </div>
 
-        {/* Score Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-          <div className={`p-4 rounded-xl border flex flex-col items-center justify-center text-center ${getScoreColor(report.overallScore)}`}>
-            <div className="text-2xl sm:text-3xl font-mono font-black">{report.overallScore}</div>
-            <div className="text-[11px] font-semibold uppercase tracking-wider mt-1">Overall Score</div>
+        {/* Performance Indicators Grid */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#5A5A40]">Core Performance Indicators</span>
+            <span className="text-[11px] text-[#2D5438] font-semibold bg-[#E9F0EA] px-2 py-0.5 rounded border border-[#C5DAC8]">
+              CEFR Benchmark: {report.overallScore >= 80 ? 'Proficient' : 'Developing'}
+            </span>
           </div>
 
-          <div className="p-4 rounded-xl border border-[#E3E3D8] bg-[#FAF9F5] flex flex-col items-center justify-center text-center">
-            <div className="text-2xl font-mono font-bold text-[#2C2C24]">{report.fluencyScore}</div>
-            <div className="text-[11px] text-[#5A5A40] font-medium uppercase tracking-wider mt-1">Fluency</div>
-          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className={`p-4 rounded-xl border flex flex-col items-center justify-center text-center ${getScoreColor(report.overallScore)}`}>
+              <div className="text-2xl sm:text-3xl font-mono font-black">{report.overallScore}</div>
+              <div className="text-[11px] font-semibold uppercase tracking-wider mt-1">Overall Score</div>
+              <span className="text-[10px] text-[#5A5A40] mt-0.5 font-medium">Composite Level</span>
+            </div>
 
-          <div className="p-4 rounded-xl border border-[#E3E3D8] bg-[#FAF9F5] flex flex-col items-center justify-center text-center">
-            <div className="text-2xl font-mono font-bold text-[#2C2C24]">{report.accuracyScore}</div>
-            <div className="text-[11px] text-[#5A5A40] font-medium uppercase tracking-wider mt-1">Grammar</div>
-          </div>
+            <div className="p-4 rounded-xl border border-[#E3E3D8] bg-[#FAF9F5] flex flex-col items-center justify-center text-center">
+              <div className="text-2xl font-mono font-bold text-[#2C2C24]">{report.fluencyScore}</div>
+              <div className="text-[11px] text-[#5A5A40] font-medium uppercase tracking-wider mt-1">Fluency Index</div>
+              <span className="text-[10px] text-[#5A5A40] mt-0.5 font-medium">Flow &amp; Natural Pace</span>
+            </div>
 
-          <div className="p-4 rounded-xl border border-[#E3E3D8] bg-[#FAF9F5] flex flex-col items-center justify-center text-center">
-            <div className="text-2xl font-mono font-bold text-[#2C2C24]">{report.vocabularyScore}</div>
-            <div className="text-[11px] text-[#5A5A40] font-medium uppercase tracking-wider mt-1">Vocabulary</div>
+            <div className="p-4 rounded-xl border border-[#E3E3D8] bg-[#FAF9F5] flex flex-col items-center justify-center text-center">
+              <div className="text-2xl font-mono font-bold text-[#2C2C24]">{report.accuracyScore}</div>
+              <div className="text-[11px] text-[#5A5A40] font-medium uppercase tracking-wider mt-1">Grammar Integrity</div>
+              <span className="text-[10px] text-[#5A5A40] mt-0.5 font-medium">Syntactic Precision</span>
+            </div>
+
+            <div className="p-4 rounded-xl border border-[#E3E3D8] bg-[#FAF9F5] flex flex-col items-center justify-center text-center">
+              <div className="text-2xl font-mono font-bold text-[#2C2C24]">{report.vocabularyScore}</div>
+              <div className="text-[11px] text-[#5A5A40] font-medium uppercase tracking-wider mt-1">Vocabulary Depth</div>
+              <span className="text-[10px] text-[#5A5A40] mt-0.5 font-medium">Lexical Variety</span>
+            </div>
           </div>
         </div>
 
@@ -309,34 +328,55 @@ export const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
             </div>
           )}
 
-          {/* Next Practice Upgrade Callout for non-enrolled users */}
+          {/* Post-Sample Immediate Joining Discount Card (10% OFF Rs. 999 = Rs. 899) */}
           {enrollment && !enrollment.isEnrolled && (
-            <div className="p-4 rounded-xl bg-linear-to-r from-[#FAF9F5] to-[#FDF6EE] border border-[#F3DFC8] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#8C521C]">
-                  <Sparkles className="w-3.5 h-3.5 text-[#C28E58]" />
-                  <span>Ready for your Next Practice?</span>
+            <div className="p-4 sm:p-5 rounded-2xl bg-linear-to-br from-[#E9F0EA] via-[#FAF9F5] to-[#FDF6EE] border-2 border-[#C5DAC8] shadow-xs space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#2D5438] text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
+                    🎉 Sample Completed Bonus
+                  </span>
+                  <span className="text-[11px] font-bold text-[#8C521C] bg-[#FDF6EE] px-2 py-0.5 rounded border border-[#F3DFC8]">
+                    ⚡ 10% Immediate Discount
+                  </span>
                 </div>
-                <p className="text-xs text-[#5A5A40]">
-                  Unlock all 50+ roleplay scenarios across all 6 languages for <span className="line-through text-[#8A8A7A]">Rs. 4,999/-</span> <span className="font-bold text-[#2D5438]">Rs. 499/-</span>.
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xs text-[#8A8A7A] line-through">Standard: Rs. 999/-</span>
+                  <span className="text-xl sm:text-2xl font-black text-[#2D5438] font-mono">Rs. 899/-</span>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <h3 className="text-sm sm:text-base font-bold text-[#2C2C24]">
+                  Unlock Full Lifetime Access Across All 12 Languages with 10% Off
+                </h3>
+                <p className="text-xs text-[#5A5A40] leading-relaxed">
+                  Congratulations on completing your <span className="font-semibold text-[#2C2C24]">{report.languageName}</span> free sample diagnostic! Based on your performance indicators ({report.overallScore}/100), you qualify for our <strong>Immediate Joining 10% Discount</strong>. Unlock unlimited roleplays, custom AI scenario builder, pronunciation coach, and official CEFR certificates.
                 </p>
               </div>
 
-              {onOpenPaymentModal && (
-                <button
-                  type="button"
-                  id="summary-upgrade-btn"
-                  onClick={() => {
-                    onClose();
-                    onOpenPaymentModal();
-                  }}
-                  className="px-4 py-2 rounded-lg bg-[#4A6B53] hover:bg-[#3E5A45] text-white text-xs font-bold shadow-xs flex items-center gap-1.5 shrink-0 self-start sm:self-auto cursor-pointer"
-                >
-                  <Lock className="w-3.5 h-3.5" />
-                  <span>Unlock Course (Rs. 499)</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              )}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 border-t border-[#DCDCCF]/80">
+                <div className="text-[11px] text-[#3D5C45] font-medium flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#4A6B53] shrink-0" />
+                  <span>Promo voucher <strong>IMMEDIATE10</strong> pre-applied • Save Rs. 100 extra</span>
+                </div>
+
+                {onOpenPaymentModal && (
+                  <button
+                    type="button"
+                    id="summary-claim-discount-btn"
+                    onClick={() => {
+                      onClose();
+                      onOpenPaymentModal(true);
+                    }}
+                    className="px-5 py-2.5 rounded-xl bg-[#4A6B53] hover:bg-[#3E5A45] active:bg-[#344C3A] text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer group"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-300 group-hover:rotate-12 transition-transform" />
+                    <span>Claim 10% Discount &amp; Join (Rs. 899/-)</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>

@@ -124,6 +124,14 @@ export const LanguageTestModal: React.FC<LanguageTestModalProps> = ({
   // 7-day challenge interactive checkboxes
   const [challengeDays, setChallengeDays] = useState(DEFAULT_7DAY_CHALLENGE);
 
+  // Certificate recipient name (clean, editable, never hardcoded to personal name)
+  const [certificateName, setCertificateName] = useState<string>(() => {
+    if (user?.name && !user.name.includes('Vikas') && user.name !== 'Language Learner') {
+      return user.name;
+    }
+    return 'Candidate Name';
+  });
+
   if (!isOpen) return null;
 
   const currentItem = allQuestions[currentQuestionIndex] || allQuestions[0];
@@ -660,7 +668,7 @@ export const LanguageTestModal: React.FC<LanguageTestModalProps> = ({
                     High-Impact Conversion Offer
                   </div>
                   <p className="text-[11px] text-[#5A5A40]">
-                    Get all 4 weeks of structured audio drills, AI roleplays &amp; lifetime coaching for just Rs. 499/-.
+                    Get all 4 weeks of structured audio drills, AI roleplays &amp; lifetime coaching for just Rs. 999/-.
                   </p>
                 </div>
 
@@ -682,7 +690,7 @@ export const LanguageTestModal: React.FC<LanguageTestModalProps> = ({
                     className="px-4 py-2 rounded-xl bg-[#4A6B53] hover:bg-[#3E5A45] text-white text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer"
                   >
                     <Lock className="w-3.5 h-3.5" />
-                    <span>Unlock Lifetime (Rs. 499/-)</span>
+                    <span>Unlock Lifetime (Rs. 999/-)</span>
                   </button>
                 </div>
               </div>
@@ -768,7 +776,7 @@ export const LanguageTestModal: React.FC<LanguageTestModalProps> = ({
                   onClick={() => setActiveView('paid_course')}
                   className="px-4 py-2 rounded-xl bg-[#4A6B53] hover:bg-[#3E5A45] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
                 >
-                  <span>Explore Paid Course (Rs. 499)</span>
+                  <span>Explore Paid Course (Rs. 999)</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -785,8 +793,8 @@ export const LanguageTestModal: React.FC<LanguageTestModalProps> = ({
                     <span>Comprehensive Master Course</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs line-through text-[#8A8A7A] mr-1.5">Rs. 4,999/-</span>
-                    <span className="text-lg font-bold font-mono text-[#2D5438]">Rs. 499/-</span>
+                    <span className="text-xs line-through text-[#8A8A7A] mr-1.5">Rs. 9,999/-</span>
+                    <span className="text-lg font-bold font-mono text-[#2D5438]">Rs. 999/-</span>
                   </div>
                 </div>
 
@@ -818,7 +826,7 @@ export const LanguageTestModal: React.FC<LanguageTestModalProps> = ({
 
                 <div className="pt-3 flex items-center justify-between border-t border-[#F3DFC8]">
                   <div className="text-[11px] text-[#8C521C] font-semibold">
-                    UPI: talwarvikasaxisbank@axl • Instant Activation
+                    Instant UPI &amp; Cards • Instant Activation
                   </div>
 
                   <button
@@ -831,7 +839,7 @@ export const LanguageTestModal: React.FC<LanguageTestModalProps> = ({
                     className="px-4 py-2.5 rounded-xl bg-[#4A6B53] hover:bg-[#3E5A45] text-white text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer"
                   >
                     <Lock className="w-3.5 h-3.5" />
-                    <span>Enroll Now (Rs. 499/-)</span>
+                    <span>Enroll Now (Rs. 999/-)</span>
                   </button>
                 </div>
               </div>
@@ -862,7 +870,7 @@ export const LanguageTestModal: React.FC<LanguageTestModalProps> = ({
                     </div>
                     <div className="text-left sm:text-right">
                       <div className="text-2xl font-bold font-mono text-[#2D5438]">
-                        ₹499 <span className="text-xs line-through text-[#8A8A7A] font-normal">₹4,999</span>
+                        ₹999 <span className="text-xs line-through text-[#8A8A7A] font-normal">₹9,999</span>
                       </div>
                       <span className="text-[11px] text-[#4A6B53] font-semibold">90% Limited-Time Discount</span>
                     </div>
@@ -896,7 +904,7 @@ export const LanguageTestModal: React.FC<LanguageTestModalProps> = ({
                     className="w-full py-3 rounded-xl bg-[#4A6B53] hover:bg-[#3E5A45] text-white text-sm font-bold shadow-md transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
                   >
                     <Lock className="w-4 h-4" />
-                    <span>Activate Lifetime All-Access (₹499/-)</span>
+                    <span>Activate Lifetime All-Access (₹999/-)</span>
                   </button>
                 </div>
               </div>
@@ -924,18 +932,32 @@ export const LanguageTestModal: React.FC<LanguageTestModalProps> = ({
                 </div>
 
                 {/* Certificate Mockup Frame */}
-                <div className="p-6 rounded-xl bg-[#FAF9F5] border-2 border-double border-[#C5DAC8] text-center space-y-2 relative">
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-[#8A8A7A]">Certificate of Spoken Mastery</div>
-                  <div className="text-xl font-serif font-bold text-[#2C2C24]">
-                    {user?.name || 'Vikas Talwar'}
+                <div className="p-6 rounded-xl bg-[#FAF9F5] border-2 border-double border-[#C5DAC8] text-center space-y-3 relative">
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-[#8A8A7A]">
+                    Official Certificate of Spoken Mastery
                   </div>
+                  
+                  <div className="flex flex-col items-center justify-center gap-1">
+                    <input
+                      type="text"
+                      value={certificateName}
+                      onChange={(e) => setCertificateName(e.target.value)}
+                      placeholder="Candidate Full Name"
+                      className="text-xl sm:text-2xl font-serif font-bold text-[#2C2C24] text-center bg-transparent border-b-2 border-dashed border-[#8A8A7A] hover:border-[#4A6B53] focus:border-[#4A6B53] focus:outline-hidden px-3 py-1 min-w-[220px] max-w-sm transition-colors cursor-text"
+                      title="Click to type and customize the name on your certificate"
+                    />
+                    <span className="text-[10px] text-[#7A7A60] italic">
+                      Click name to customize for official certificate
+                    </span>
+                  </div>
+
                   <p className="text-xs text-[#5A5A40] max-w-sm mx-auto">
-                    has successfully demonstrated professional spoken fluency in <strong>{language.name}</strong> according to international CEFR standards.
+                    has successfully demonstrated professional spoken fluency in <strong>{language.name} ({language.nativeName})</strong> according to international CEFR standards.
                   </p>
 
                   <div className="pt-4 flex items-center justify-between text-[10px] text-[#8A8A7A] border-t border-[#E3E3D8]">
-                    <span>Verification ID: FLAI-{Date.now().toString().slice(-6)}</span>
-                    <span className="font-bold text-[#4A6B53]">FluentAI Global Institute</span>
+                    <span>Verification ID: TTW-{Date.now().toString().slice(-6)}</span>
+                    <span className="font-bold text-[#4A6B53]">TalkToWorld Global Language Institute</span>
                   </div>
                 </div>
 

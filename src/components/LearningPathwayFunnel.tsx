@@ -90,13 +90,13 @@ export const LearningPathwayFunnel: React.FC<LearningPathwayFunnelProps> = ({
       id: 'paid_course' as const,
       num: '05',
       title: 'Paid course',
-      subtitle: 'Rs. 499/- (Special Offer)',
+      subtitle: 'Rs. 999/- (Special Offer)',
       desc: 'Lifetime full access to all scenarios, AI speech coach & native voices',
-      tag: 'Special ₹499 (was ₹4,999)',
+      tag: 'Special ₹999 (was ₹9,999)',
       tagColor: 'bg-[#E9F0EA] text-[#2D5438] border-[#C5DAC8] font-bold',
       icon: Star,
       iconBg: 'bg-[#4A6B53] text-white',
-      actionText: enrollment.isEnrolled ? 'Enrolled ✓' : 'Enroll ₹499',
+      actionText: enrollment.isEnrolled ? 'Enrolled ✓' : 'Enroll ₹999',
       isCompleted: enrollment.isEnrolled,
     },
     {
@@ -244,7 +244,7 @@ export const LearningPathwayFunnel: React.FC<LearningPathwayFunnelProps> = ({
         </div>
 
         <div className="text-[11px] font-mono text-[#8A8A7A]">
-          Direct UPI: talwarvikasaxisbank@axl
+          Instant UPI &amp; Cards Accepted
         </div>
       </div>
     </div>

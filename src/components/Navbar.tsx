@@ -272,10 +272,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="nav-unlock-course-btn"
               onClick={onOpenPaymentModal}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#FAF9F5] border border-[#C28E58] text-[#8C521C] hover:bg-[#FDF6EE] text-xs font-bold shadow-xs transition-all active:scale-98 cursor-pointer"
-              title="Unlock full course: 1 Free exercise included, all next practices for Rs. 499/- (Regular Rs. 4,999/-)"
+              title="Unlock full course: 1 Free sample included per language, full access for Rs. 999/- (Regular Rs. 9,999/-)"
             >
               <Lock className="w-3.5 h-3.5 text-[#C28E58]" />
-              <span>Unlock (<span className="line-through text-[#9E7A5A]">₹4,999</span> <span className="text-[#2D5438]">₹499</span>)</span>
+              <span>Unlock (<span className="line-through text-[#9E7A5A]">₹9,999</span> <span className="text-[#2D5438]">₹999</span>)</span>
             </button>
           )}
 

@@ -228,7 +228,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FAF9F5] hover:bg-[#EBEBE0] text-[#2C2C24] font-bold text-sm border border-[#DCDCCF] transition-all active:scale-98 cursor-pointer"
               >
                 <ShieldCheck className="w-4 h-4 text-[#4A6B53]" />
-                <span>Enroll in Course (Rs. 499/-)</span>
+                <span>Enroll in Course (Rs. 999/-)</span>
               </button>
             )}
           </div>
@@ -364,7 +364,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
           {!enrollment.isEnrolled && (
             <div className="absolute top-4 right-4 px-2 py-0.5 rounded-full bg-[#FDF6EE] border border-[#F3DFC8] text-[#8C521C] text-[10px] font-bold flex items-center gap-1">
               <Lock className="w-3 h-3" />
-              <span>Full Pass (Rs. 499)</span>
+              <span>Full Pass (Rs. 999)</span>
             </div>
           )}
 
@@ -385,7 +385,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
           </div>
 
           <div className="pt-4 flex items-center gap-2 text-xs font-semibold text-[#4A6B53]">
-            <span>{enrollment.isEnrolled ? 'Launch AI Scenario Builder' : 'Unlock Custom Builder (Rs. 499/-)'}</span>
+            <span>{enrollment.isEnrolled ? 'Launch AI Scenario Builder' : 'Unlock Custom Builder (Rs. 999/-)'}</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </div>
         </button>
@@ -431,12 +431,12 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                           isFree ? (
                             <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E9F0EA]/95 text-[#2D5438] border border-[#C5DAC8] flex items-center gap-1 shadow-2xs backdrop-blur-xs">
                               <Sparkles className="w-2.5 h-2.5 text-[#4A6B53]" />
-                              <span>1st Free</span>
+                              <span>Free Sample to Try</span>
                             </span>
                           ) : (
                             <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#FDF6EE]/95 text-[#8C521C] border border-[#F3DFC8] flex items-center gap-1 backdrop-blur-xs">
                               <Lock className="w-2.5 h-2.5" />
-                              <span>Next Up</span>
+                              <span>Locked (₹999)</span>
                             </span>
                           )
                         )}
@@ -525,13 +525,13 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                 ) : isFree ? (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    <span>Start Free Practice</span>
+                    <span>Try Free Sample ({selectedLanguage.name})</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 ) : (
                   <>
                     <Lock className="w-4 h-4 text-[#C28E58]" />
-                    <span>Unlock Next Practice (<span className="line-through text-[#9E7A5A]">₹4,999</span> <span className="text-[#2D5438]">₹499</span>)</span>
+                    <span>Unlock Next Practice (<span className="line-through text-[#9E7A5A]">₹4,999</span> <span className="text-[#2D5438]">₹999</span>)</span>
                   </>
                 )}
               </button>

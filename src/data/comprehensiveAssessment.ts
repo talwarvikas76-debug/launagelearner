@@ -1,4 +1,5 @@
 import { LanguageTestQuestion, WeeklyPlanBreakdown } from '../types';
+import { EXTENDED_ASSESSMENTS_BY_LANG } from './comprehensiveAssessmentsExtended';
 
 export interface AssessmentSection {
   skill: 'Vocabulary' | 'Grammar' | 'Reading' | 'Listening' | 'Writing' | 'Speaking';
@@ -8,7 +9,7 @@ export interface AssessmentSection {
   questions: LanguageTestQuestion[];
 }
 
-export const COMPREHENSIVE_ASSESSMENTS_BY_LANG: Record<string, AssessmentSection[]> = {
+const BASE_ASSESSMENTS_BY_LANG: Record<string, AssessmentSection[]> = {
   de: [
     {
       skill: 'Vocabulary',
@@ -436,17 +437,313 @@ export const COMPREHENSIVE_ASSESSMENTS_BY_LANG: Record<string, AssessmentSection
   ]
 };
 
-// Fallback generator for other languages
-export function getComprehensiveAssessmentSections(langId: string, langName: string): AssessmentSection[] {
+export const COMPREHENSIVE_ASSESSMENTS_BY_LANG: Record<string, AssessmentSection[]> = {
+  ...BASE_ASSESSMENTS_BY_LANG,
+  ...EXTENDED_ASSESSMENTS_BY_LANG
+};
+
+// Retrieve comprehensive assessment questions specifically tailored for the selected language
+export function getComprehensiveAssessmentSections(langId: string, langName?: string): AssessmentSection[] {
   if (COMPREHENSIVE_ASSESSMENTS_BY_LANG[langId]) {
     return COMPREHENSIVE_ASSESSMENTS_BY_LANG[langId];
   }
   
-  // Default to Spanish template if not explicitly defined
-  return COMPREHENSIVE_ASSESSMENTS_BY_LANG.es;
+  // Clean fallback
+  return COMPREHENSIVE_ASSESSMENTS_BY_LANG.en || COMPREHENSIVE_ASSESSMENTS_BY_LANG.es;
 }
 
-// Generate Personalized 4-Week Plan based on test score & CEFR Level
+export interface LanguageAssessmentProfile {
+  category: string;
+  categoryTier: 'Tier 1 (Fastest)' | 'Tier 2 (Moderate)' | 'Tier 3 (Challenging)' | 'Tier 4 (Intensive)';
+  fsiWeeks: number;
+  estimatedHoursToNextLevel: number;
+  nextLevel: string;
+  linguisticHighlights: { title: string; desc: string }[];
+  sampleDiagnosticQuestion: {
+    question: string;
+    translation: string;
+    options: string[];
+    correctAnswer: number;
+    explanation: string;
+    audioPrompt?: string;
+  };
+}
+
+// Language metadata profiles for dynamic sync in FreeAssessmentSection
+const LANGUAGE_PROFILES: Record<string, Omit<LanguageAssessmentProfile, 'estimatedHoursToNextLevel' | 'nextLevel'>> = {
+  es: {
+    category: 'Category I (Romance Language)',
+    categoryTier: 'Tier 1 (Fastest)',
+    fsiWeeks: 24,
+    linguisticHighlights: [
+      { title: 'Subjuntivo & Moods', desc: 'Expressing desires, doubt & hypothetical outcomes' },
+      { title: 'Ser vs Estar', desc: 'Permanent characteristics vs transient emotional states' },
+      { title: 'Rolling "R" & Flow', desc: 'Syllable-timed pacing and liquid liaison vowels' }
+    ],
+    sampleDiagnosticQuestion: {
+      question: '¿Qué palabra completa la frase? "Al terminar la cena, pedimos la _____ al camarero."',
+      translation: 'Which word completes the sentence? "At the end of dinner, we ask the waiter for the _____."',
+      options: ['cuenta', 'maleta', 'dirección', 'llave'],
+      correctAnswer: 0,
+      explanation: '"La cuenta" is the restaurant check / bill in Spanish.',
+      audioPrompt: 'Al terminar la cena, pedimos la cuenta al camarero.'
+    }
+  },
+  fr: {
+    category: 'Category I (Romance Language)',
+    categoryTier: 'Tier 1 (Fastest)',
+    fsiWeeks: 30,
+    linguisticHighlights: [
+      { title: 'Liaisons & Elision', desc: 'Smooth phonetic connections between consonant and vowel' },
+      { title: 'Passé Composé vs Imparfait', desc: 'Discrete past achievements vs descriptive background' },
+      { title: 'Nasal Vowels (an, in, on)', desc: 'Distinct acoustic resonance without English consonant endings' }
+    ],
+    sampleDiagnosticQuestion: {
+      question: 'Quel mot complète la phrase ? "Au restaurant, je demande _____ pour payer."',
+      translation: 'Which word completes the sentence? "At the restaurant, I ask for _____ to pay."',
+      options: ['l\'addition', 'la serviette', 'la clé', 'le billet'],
+      correctAnswer: 0,
+      explanation: '"L\'addition" is the restaurant bill in French.',
+      audioPrompt: 'Au restaurant, je demande l\'addition pour payer.'
+    }
+  },
+  de: {
+    category: 'Category II (Germanic Language)',
+    categoryTier: 'Tier 2 (Moderate)',
+    fsiWeeks: 36,
+    linguisticHighlights: [
+      { title: 'Noun Genders & Cases', desc: 'Der, Die, Das across Nominativ, Akkusativ, Dativ & Genitiv' },
+      { title: 'Verb-Second (V2) & Nebensatz', desc: 'Strict verb positioning in main vs subordinate clauses' },
+      { title: 'Compound Words & Separables', desc: 'Precision morphology and separable prefixes (auf-, an-, ab-)' }
+    ],
+    sampleDiagnosticQuestion: {
+      question: 'Welches Wort passt am besten? "Könnten Sie mir bitte die _____ bringen? Ich möchte bezahlen."',
+      translation: 'Which word fits best? "Could you please bring me the _____? I would like to pay."',
+      options: ['Speisekarte', 'Rechnung', 'Fahrkarte', 'Zeitung'],
+      correctAnswer: 1,
+      explanation: '"Die Rechnung" means the bill/check in German.',
+      audioPrompt: 'Könnten Sie mir bitte die Rechnung bringen? Ich möchte bezahlen.'
+    }
+  },
+  en: {
+    category: 'Category I (Global Germanic)',
+    categoryTier: 'Tier 1 (Fastest)',
+    fsiWeeks: 24,
+    linguisticHighlights: [
+      { title: 'Phrasal Verbs & Nuance', desc: 'Dynamic idioms (give up, turn down, look forward to)' },
+      { title: 'Conditionals & Perfect Tenses', desc: 'Subtle temporal distinctions (have been doing vs did)' },
+      { title: 'Connected Speech & Stress', desc: 'Stress-timed rhythm with vowel reduction (schwa /ə/)' }
+    ],
+    sampleDiagnosticQuestion: {
+      question: 'Which word best completes the sentence? "Before signing the agreement, please read the _____ print carefully."',
+      translation: 'Select the standard English idiom for contractual details.',
+      options: ['fine', 'tiny', 'small', 'soft'],
+      correctAnswer: 0,
+      explanation: '"Fine print" is the standard collocation for small contractual stipulations.',
+      audioPrompt: 'Before signing the agreement, please read the fine print carefully.'
+    }
+  },
+  it: {
+    category: 'Category I (Romance Language)',
+    categoryTier: 'Tier 1 (Fastest)',
+    fsiWeeks: 24,
+    linguisticHighlights: [
+      { title: 'Melodic Cadence & Double Consonants', desc: 'Distinct vowel clarity and held geminate consonants' },
+      { title: 'Passato Prossimo & Agreement', desc: 'Auxiliary selection (essere vs avere) with participle gender' },
+      { title: 'Pronomi Combinati', desc: 'Streamlined clitic pronouns (me lo, te la, ce ne)' }
+    ],
+    sampleDiagnosticQuestion: {
+      question: 'Quale parola completa la frase? "Al ristorante, alla fine della cena, chiediamo il _____ al cameriere."',
+      translation: 'Which word completes the sentence? "At the restaurant, we ask the waiter for the _____."',
+      options: ['conto', 'biglietto', 'menù', 'passaporto'],
+      correctAnswer: 0,
+      explanation: '"Il conto" means the restaurant bill in Italian.',
+      audioPrompt: 'Al ristorante, alla fine della cena, chiediamo il conto al cameriere.'
+    }
+  },
+  ja: {
+    category: 'Category IV (Exceptional Difficulty)',
+    categoryTier: 'Tier 4 (Intensive)',
+    fsiWeeks: 88,
+    linguisticHighlights: [
+      { title: 'Particles (は, が, に, で, を)', desc: 'Grammatical markers indicating topic, subject, and location' },
+      { title: 'Pitch Accent & Mora Rhythm', desc: 'High-low melodic inflections with steady timing' },
+      { title: 'Keigo (Honorific & Humble)', desc: 'Polite register adaptation for social context' }
+    ],
+    sampleDiagnosticQuestion: {
+      question: 'レストランで支払いをするとき、店員さんに何と言いますか？',
+      translation: 'At a restaurant, what do you say to the staff when paying the bill?',
+      options: [
+        'お会計をお願いします (Okaikei o onegaishimasu)',
+        'ごちそうさまでした (Gochisousama deshita)',
+        'いらっしゃいませ (Irasshaimase)',
+        'メニューをください (Menyuu o kudasai)'
+      ],
+      correctAnswer: 0,
+      explanation: '「お会計をお願いします」means "The check, please" in Japanese.',
+      audioPrompt: 'すみません、お会計をお願いします。'
+    }
+  },
+  zh: {
+    category: 'Category IV (Tonal Logographic)',
+    categoryTier: 'Tier 4 (Intensive)',
+    fsiWeeks: 88,
+    linguisticHighlights: [
+      { title: '4 Tones & Neutral Tone', desc: 'Acoustic pitch contours that alter lexical meaning' },
+      { title: 'Classifier Measure Words', desc: 'Object categorizers (一本, 两支, 三个) for noun phrases' },
+      { title: 'Topic-Prominent Syntax', desc: 'Time-manner-place sequencing with particle aspect markers' }
+    ],
+    sampleDiagnosticQuestion: {
+      question: '在餐厅吃完饭后，向服务员结账时应该说什么？',
+      translation: 'At a restaurant after finishing your meal, what do you say to pay the bill?',
+      options: ['服务员，买单！(Mǎidān)', '服务员，上菜！', '欢迎光临！', '谢谢，再见！'],
+      correctAnswer: 0,
+      explanation: '“买单” (Mǎidān) is the standard colloquial phrase for paying the bill.',
+      audioPrompt: '服务员，买单，谢谢！'
+    }
+  },
+  pt: {
+    category: 'Category I (Romance Language)',
+    categoryTier: 'Tier 1 (Fastest)',
+    fsiWeeks: 24,
+    linguisticHighlights: [
+      { title: 'Nasal Diphthongs (-ão, -ãe, -em)', desc: 'Resonant oral-nasal transitions unique to Portuguese' },
+      { title: 'Personal Infinitive', desc: 'Inflected verb forms retaining personalized subjects' },
+      { title: 'Por vs Para Distinctions', desc: 'Cause/medium versus ultimate goal/destination' }
+    ],
+    sampleDiagnosticQuestion: {
+      question: 'Ao terminar a refeição no restaurante, o que pedimos ao garçom?',
+      translation: 'Upon finishing a meal, what do we ask the waiter for?',
+      options: ['A conta', 'O cardápio', 'A chave', 'O bilhete'],
+      correctAnswer: 0,
+      explanation: '"A conta" is the standard term for requesting the bill.',
+      audioPrompt: 'Por favor, o senhor pode trazer a conta?'
+    }
+  },
+  ko: {
+    category: 'Category IV (Agglutinative Language)',
+    categoryTier: 'Tier 4 (Intensive)',
+    fsiWeeks: 88,
+    linguisticHighlights: [
+      { title: 'Hangul Phonology & Batchim', desc: 'Systematic syllable blocks with final consonant assimilation' },
+      { title: 'Honorific Verb Stems', desc: 'Layered hierarchical politeness suffixes (-시-, -세요)' },
+      { title: 'Topic & Subject Particles', desc: 'Subtle focus contrast between 은/는 and 이/가' }
+    ],
+    sampleDiagnosticQuestion: {
+      question: '식당에서 식사를 마친 후 결제할 때 직원에게 무엇을 부탁하나요?',
+      translation: 'At a restaurant, what do you ask the staff for when paying?',
+      options: [
+        '계산해 주세요 (Gyesan-hae juseyo)',
+        '메뉴판 주세요 (Menyupan juseyo)',
+        '물 좀 주세요 (Mul jom juseyo)',
+        '안녕히 계세요 (Annyeonghi gyeseyo)'
+      ],
+      correctAnswer: 0,
+      explanation: '"계산해 주세요" means "Please bring the bill / check".',
+      audioPrompt: '저기요, 계산해 주세요.'
+    }
+  },
+  ar: {
+    category: 'Category IV (Semitic Root System)',
+    categoryTier: 'Tier 4 (Intensive)',
+    fsiWeeks: 88,
+    linguisticHighlights: [
+      { title: 'Triconsonantal Roots (k-t-b)', desc: 'Deep semantic patterns generating derived nouns and verbs' },
+      { title: 'Pharyngeal & Emphatic Consonants', desc: 'Deep throat resonance (ح, خ, ع, ق, ص, ض, ط, ظ)' },
+      { title: 'Dual & Plural Agreement', desc: 'Specific grammatical forms for pairs and plural non-humans' }
+    ],
+    sampleDiagnosticQuestion: {
+      question: 'عند الانتهاء من تناول الطعام في المطعم، ماذا تطلب من النادل لدفع الثمن؟',
+      translation: 'At the end of a meal in a restaurant, what do you ask the waiter for?',
+      options: ['الحساب، من فضلك (The check, please)', 'قائمة الطعام', 'مفتاح الغرفة', 'كوب ماء'],
+      correctAnswer: 0,
+      explanation: '"الحساب، من فضلك" is the polite standard request for the check.',
+      audioPrompt: 'لو سمحت، الحساب من فضلك.'
+    }
+  },
+  ru: {
+    category: 'Category III (Slavic Language)',
+    categoryTier: 'Tier 3 (Challenging)',
+    fsiWeeks: 44,
+    linguisticHighlights: [
+      { title: '6 Grammatical Cases', desc: 'Inflected endings expressing subject, object, instrument, and location' },
+      { title: 'Verbs of Motion', desc: 'Directional unidirectional vs multidirectional verbs (идти vs ходить)' },
+      { title: 'Palatalization & Hard/Soft Signs', desc: 'Consonant softening fundamentally altering vowel color' }
+    ],
+    sampleDiagnosticQuestion: {
+      question: 'Какое слово пропущено? "В ресторане после ужина мы просим официанта принести _____."',
+      translation: 'Which word is missing? "In a restaurant after dinner we ask the waiter for the _____."',
+      options: ['счёт', 'билет', 'меню', 'ключ'],
+      correctAnswer: 0,
+      explanation: '"Счёт" means the restaurant bill in Russian.',
+      audioPrompt: 'Принесите, пожалуйста, счёт.'
+    }
+  },
+  hi: {
+    category: 'Category III (Indo-Aryan Language)',
+    categoryTier: 'Tier 3 (Challenging)',
+    fsiWeeks: 44,
+    linguisticHighlights: [
+      { title: 'Postpositions & Ergative Case (ने)', desc: 'Markers placed after nouns with past-transitive agreement' },
+      { title: 'Retroflex vs Dental Consonants', desc: 'Tongue-curled sounds (ट, ठ, ड, ढ) versus dental sounds (त, थ, द, ध)' },
+      { title: 'Aspirated Stops & Tone', desc: 'Breath-released phonemes adding expressive depth' }
+    ],
+    sampleDiagnosticQuestion: {
+      question: 'होटल या रेस्टोरेंट में खाना खाने के बाद भुगतान के लिए क्या माँगते हैं?',
+      translation: 'At a restaurant after a meal, what do you ask for to pay?',
+      options: ['बिल (Bill)', 'मेन्यू (Menu)', 'चाबी (Key)', 'किताब (Book)'],
+      correctAnswer: 0,
+      explanation: 'भुगतान के लिए "बिल" माँगा जाता है।',
+      audioPrompt: 'कृपया बिल ले आइए।'
+    }
+  }
+};
+
+export function getLanguageAssessmentProfile(langId: string, currentLevel: string): LanguageAssessmentProfile {
+  const baseProfile = LANGUAGE_PROFILES[langId] || LANGUAGE_PROFILES.en;
+  
+  // Calculate CEFR milestone projection adapted to linguistic difficulty tier
+  let nextLevel = 'B1';
+  let hours = 84;
+
+  const multiplier = baseProfile.categoryTier.includes('Tier 4') ? 1.6
+    : baseProfile.categoryTier.includes('Tier 3') ? 1.3
+    : baseProfile.categoryTier.includes('Tier 2') ? 1.15 : 1.0;
+
+  switch (currentLevel) {
+    case 'A1':
+      nextLevel = 'A2';
+      hours = Math.round(60 * multiplier);
+      break;
+    case 'A2':
+      nextLevel = 'B1';
+      hours = Math.round(84 * multiplier);
+      break;
+    case 'B1':
+      nextLevel = 'B2';
+      hours = Math.round(120 * multiplier);
+      break;
+    case 'B2':
+      nextLevel = 'C1';
+      hours = Math.round(180 * multiplier);
+      break;
+    case 'C1':
+      nextLevel = 'C2';
+      hours = Math.round(220 * multiplier);
+      break;
+    default:
+      nextLevel = 'B1';
+      hours = Math.round(84 * multiplier);
+  }
+
+  return {
+    ...baseProfile,
+    nextLevel,
+    estimatedHoursToNextLevel: hours
+  };
+}
+
+// Generate Personalized 4-Week Plan tailored for the target language
 export function generatePersonalizedWeeklyPlan(level: string, langName: string): WeeklyPlanBreakdown[] {
   return [
     {
@@ -456,13 +753,13 @@ export function generatePersonalizedWeeklyPlan(level: string, langName: string):
       grammarLessonsCount: 3,
       speakingExercisesCount: 2,
       testsCount: 1,
-      testType: '1 listening test',
+      testType: '1 listening diagnostic test',
       focusTopics: [
-        `High-frequency ${langName} greetings & social introductions`,
-        'Present tense regular & irregular verb foundations',
-        'Numbers, time & essential questions (Where, Who, How much)'
+        `High-frequency ${langName} greetings & social etiquette`,
+        'Present tense core verbs & practical sentence structures',
+        'Numbers, directions & question starters (Where, Who, How much)'
       ],
-      suggestedScenarios: ['Ordering at a Local Café', 'Checking In at a Boutique Hotel']
+      suggestedScenarios: ['Ordering at a Local Café', 'Checking In at a Hotel']
     },
     {
       week: 2,
@@ -473,11 +770,11 @@ export function generatePersonalizedWeeklyPlan(level: string, langName: string):
       testsCount: 1,
       testType: '1 reading comprehension test',
       focusTopics: [
-        'Directions, transportation & asking for local recommendations',
-        'Past tense storytelling & narrating recent events',
-        'Polite requests and conditional phrasing'
+        `Authentic ${langName} transit, asking for recommendations`,
+        'Narrating recent activities and past events smoothly',
+        'Polite conditional phrasing and courtesy formulas'
       ],
-      suggestedScenarios: ['Asking Directions in the City Center', 'Shopping at an Open-Air Market']
+      suggestedScenarios: ['Asking Directions in the City Center', 'Shopping at a Local Market']
     },
     {
       week: 3,
@@ -489,25 +786,25 @@ export function generatePersonalizedWeeklyPlan(level: string, langName: string):
       testType: '2 listening & comprehension tests',
       focusTopics: [
         'Expressing opinions, agreement & constructive debate',
-        'Subjunctive / indirect speech & connectors (although, because, therefore)',
-        'Professional workplace dialogues & phone etiquette'
+        'Connectors, subordinate clauses & complex logic (although, therefore)',
+        `Professional ${langName} dialogues & workplace etiquette`
       ],
       suggestedScenarios: ['Job Interview Discussion', 'Resolving an Issue with Customer Support']
     },
     {
       week: 4,
-      title: 'Week 4: Fluency Simulation & Milestone CEFR Exam',
+      title: 'Week 4: Spoken Fluency Simulation & Milestone CEFR Exam',
       vocabWordsCount: 60,
       grammarLessonsCount: 4,
       speakingExercisesCount: 4,
       testsCount: 1,
       testType: '1 milestone CEFR practice exam',
       focusTopics: [
-        'Idiomatic colloquialisms, speech fillers & natural native pacing',
-        'Complex sentence structures & spontaneous roleplays',
-        'Full comprehensive fluency evaluation & certification'
+        `Natural ${langName} colloquialisms & authentic speech pacing`,
+        'Spontaneous roleplays with AI conversational partner',
+        'Full comprehensive fluency evaluation & verified certification'
       ],
-      suggestedScenarios: ['Dinner Party with Native Friends', 'Negotiating a Contract or Business Deal']
+      suggestedScenarios: ['Dinner Party with Native Friends', 'Negotiating a Project Agreement']
     }
   ];
 }

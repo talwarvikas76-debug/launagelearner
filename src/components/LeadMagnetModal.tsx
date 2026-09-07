@@ -905,7 +905,7 @@ export const LeadMagnetModal: React.FC<LeadMagnetModalProps> = ({
                           className="px-5 py-2.5 rounded-xl bg-[#FAF9F5] hover:bg-[#EBEBE0] text-[#2C2C24] font-bold text-xs border border-[#DCDCCF] flex items-center gap-2 cursor-pointer"
                         >
                           <ShieldCheck className="w-4 h-4 text-[#4A6B53]" />
-                          <span>Unlock Lifetime Complete Course (Rs. 499/-)</span>
+                          <span>Unlock Lifetime Complete Course (Rs. 999/-)</span>
                         </button>
                       )}
                     </div>

@@ -54,10 +54,16 @@ const STORAGE_KEYS = {
 };
 
 export default function App() {
-  // 1. Language & Level State
+  // 1. Language & Level State - Default to English, updates dynamically on selection
   const [currentLanguage, setCurrentLanguage] = useState<LanguageConfig>(() => {
-    const savedId = localStorage.getItem(STORAGE_KEYS.LANGUAGE);
-    return SUPPORTED_LANGUAGES.find((l) => l.id === savedId) || SUPPORTED_LANGUAGES[0];
+    const hasUserSelected = localStorage.getItem('fluency_user_selected_lang') === 'true';
+    if (hasUserSelected) {
+      const savedId = localStorage.getItem(STORAGE_KEYS.LANGUAGE);
+      const matched = SUPPORTED_LANGUAGES.find((l) => l.id === savedId);
+      if (matched) return matched;
+    }
+    // By default, language remains English
+    return SUPPORTED_LANGUAGES.find((l) => l.id === 'en') || SUPPORTED_LANGUAGES[0];
   });
 
   const [currentLevel, setCurrentLevel] = useState<CEFRLevel>(() => {
@@ -257,6 +263,16 @@ export default function App() {
       localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
     }
   }, [user]);
+
+  const handleSelectLanguage = (lang: LanguageConfig) => {
+    setCurrentLanguage(lang);
+    try {
+      localStorage.setItem(STORAGE_KEYS.LANGUAGE, lang.id);
+      localStorage.setItem('fluency_user_selected_lang', 'true');
+    } catch (e) {
+      console.warn('Storage error:', e);
+    }
+  };
 
   const handleOpenAuthModal = (tab: 'google' | 'email' | 'phone' = 'google', message?: string) => {
     setAuthModalDefaultTab(tab);
@@ -656,11 +672,11 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F0] text-[#2C2C24] flex flex-col font-sans selection:bg-[#D4A373]/30 selection:text-[#2C2C24]">
+    <div className="min-h-screen bg-[#F6F7F2] text-[#1F2421] flex flex-col font-sans selection:bg-[#2F523A]/20 selection:text-[#1F2421]">
       {/* Global Navigation Bar */}
       <Navbar
         currentLanguage={currentLanguage}
-        onSelectLanguage={setCurrentLanguage}
+        onSelectLanguage={handleSelectLanguage}
         currentLevel={currentLevel}
         onSelectLevel={setCurrentLevel}
         userStats={userStats}
@@ -693,6 +709,7 @@ export default function App() {
             scenarios={scenarios}
             selectedLanguage={currentLanguage}
             currentLevel={currentLevel}
+            onSelectLanguage={handleSelectLanguage}
             onSelectScenario={handleSelectScenario}
             onOpenCustomScenarioModal={() => {
               if (!enrollment.isEnrolled) {

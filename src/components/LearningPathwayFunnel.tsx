@@ -1,18 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Sparkles, 
   Award, 
   BookOpen, 
-  Flame, 
-  Star, 
-  CreditCard, 
   GraduationCap, 
-  ArrowDown, 
   ArrowRight, 
   Check, 
   ChevronRight,
   ShieldCheck,
-  Zap
+  ChevronDown
 } from 'lucide-react';
 import { LanguageConfig, CourseEnrollment, UserProfile, CEFRLevel } from '../types';
 
@@ -29,224 +25,221 @@ export const LearningPathwayFunnel: React.FC<LearningPathwayFunnelProps> = ({
   language,
   currentLevel,
   enrollment,
-  user,
   onOpenStep,
   onOpenPaymentModal
 }) => {
-  const steps = [
+  const [accordionOpen, setAccordionOpen] = useState(false);
+
+  const stages = [
     {
-      id: 'test' as const,
-      num: '01',
-      title: 'FREE LANGUAGE TEST',
-      subtitle: '5-min Diagnostic Quiz',
-      desc: `Adaptive test in ${language.name} assessing vocabulary, listening & grammar`,
-      tag: '100% Free',
-      tagColor: 'bg-[#E9F0EA] text-[#2D5438] border-[#C5DAC8]',
+      id: 'diagnostic',
+      stepNum: 1,
+      title: 'Quick Diagnostic',
+      subtitle: 'Discover your CEFR level',
+      desc: '5-minute adaptive assessment of vocabulary, grammar, and auditory comprehension.',
+      badge: '100% Free',
+      badgeColor: 'bg-[#E9F0EA] text-[#2F523A] border-[#C5DAC8]',
+      imageUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80',
       icon: Sparkles,
-      iconBg: 'bg-[#E9F0EA] text-[#4A6B53]',
-      actionText: 'Take Free Test',
-      isCompleted: true,
+      onClick: () => onOpenStep('test'),
+      actionLabel: 'Take Test',
+      status: 'Ready',
     },
     {
-      id: 'score' as const,
-      num: '02',
-      title: 'Personalized Score',
-      subtitle: 'CEFR Assessment',
-      desc: 'Instant proficiency report with granular skill breakdown (0-100)',
-      tag: 'Instant AI Report',
-      tagColor: 'bg-[#FAF9F5] text-[#5A5A40] border-[#DCDCCF]',
-      icon: Award,
-      iconBg: 'bg-[#FAF9F5] text-[#8C521C]',
-      actionText: 'View Score',
-      isCompleted: true,
-    },
-    {
-      id: 'plan' as const,
-      num: '03',
-      title: 'AI-generated Learning Plan',
-      subtitle: '4-Week Custom Syllabus',
-      desc: 'Smart weekly milestones targeting your specific weak points & speaking goals',
-      tag: 'Custom AI Roadmap',
-      tagColor: 'bg-[#EFF4F8] text-[#365A78] border-[#D0DFEB]',
+      id: 'roadmap',
+      stepNum: 2,
+      title: 'Targeted Roadmap',
+      subtitle: 'Tailored AI daily missions',
+      desc: 'Personalized 30-day curriculum focusing strictly on your conversational gaps.',
+      badge: 'Custom AI Plan',
+      badgeColor: 'bg-[#EFF4F8] text-[#365A78] border-[#D0DFEB]',
+      imageUrl: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=600&q=80',
       icon: BookOpen,
-      iconBg: 'bg-[#EFF4F8] text-[#365A78]',
-      actionText: 'View AI Plan',
-      isCompleted: false,
+      onClick: () => onOpenStep('plan'),
+      actionLabel: 'View Plan',
+      status: 'Active',
     },
     {
-      id: 'challenge' as const,
-      num: '04',
-      title: 'Free 7-day challenge',
-      subtitle: 'Habit Sprint',
-      desc: 'Daily 5-minute interactive speaking missions with reward badges',
-      tag: 'Daily Streak',
-      tagColor: 'bg-[#FDF6EE] text-[#8C521C] border-[#F3DFC8]',
-      icon: Flame,
-      iconBg: 'bg-[#FDF6EE] text-[#C28E58]',
-      actionText: 'Start Challenge',
-      isCompleted: false,
+      id: 'immersion',
+      stepNum: 3,
+      title: 'Daily Voice Immersion',
+      subtitle: 'Interactive AI roleplays',
+      desc: 'Spontaneous dialogues with realistic avatars, instant pronunciation coaching, and zero judgment.',
+      badge: 'Voice Coach',
+      badgeColor: 'bg-[#FDF6EE] text-[#8C521C] border-[#F3DFC8]',
+      imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80',
+      icon: Sparkles,
+      onClick: () => {
+        const el = document.getElementById('scenarios-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      },
+      actionLabel: 'Explore Scenarios',
+      status: 'Available',
     },
     {
-      id: 'paid_course' as const,
-      num: '05',
-      title: 'Paid course',
-      subtitle: 'Rs. 999/- (Special Offer)',
-      desc: 'Lifetime full access to all scenarios, AI speech coach & native voices',
-      tag: 'Special ₹999 (was ₹9,999)',
-      tagColor: 'bg-[#E9F0EA] text-[#2D5438] border-[#C5DAC8] font-bold',
-      icon: Star,
-      iconBg: 'bg-[#4A6B53] text-white',
-      actionText: enrollment.isEnrolled ? 'Enrolled ✓' : 'Enroll ₹999',
-      isCompleted: enrollment.isEnrolled,
-    },
-    {
-      id: 'subscription' as const,
-      num: '06',
-      title: 'Subscription',
-      subtitle: 'Lifetime All-Access',
-      desc: 'Single one-time payment with zero recurring fees or renewal charges',
-      tag: 'No Recurring Fees',
-      tagColor: 'bg-[#FAF9F5] text-[#5A5A40] border-[#DCDCCF]',
-      icon: CreditCard,
-      iconBg: 'bg-[#FAF9F5] text-[#4E4782]',
-      actionText: 'View All-Access',
-      isCompleted: enrollment.isEnrolled,
-    },
-    {
-      id: 'certification' as const,
-      num: '07',
-      title: 'Certification / advanced course',
-      subtitle: 'Official CEFR Diploma',
-      desc: 'Verified accredited certificate of fluency for resume & LinkedIn',
-      tag: 'CEFR B2/C1 Diploma',
-      tagColor: 'bg-[#F6EEF5] text-[#7A426F] border-[#E8D1E6]',
+      id: 'certification',
+      stepNum: 4,
+      title: 'Certified Fluency',
+      subtitle: 'CEFR B2/C1 credentials',
+      desc: 'Official verified certificate with digital verification link and career milestone badge.',
+      badge: 'Accredited',
+      badgeColor: 'bg-[#E9F0EA] text-[#2F523A] border-[#C5DAC8]',
+      imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80',
       icon: GraduationCap,
-      iconBg: 'bg-[#F6EEF5] text-[#7A426F]',
-      actionText: 'View Certificate',
-      isCompleted: false,
+      onClick: () => onOpenStep('certification'),
+      actionLabel: 'View Certificate',
+      status: enrollment.isEnrolled ? 'Unlocked' : 'Included',
     },
   ];
 
   return (
-    <div className="w-full rounded-2xl bg-[#FAF9F5] border border-[#E3E3D8] p-5 sm:p-7 mb-8 shadow-xs overflow-hidden">
-      {/* Funnel Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E3E3D8]">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#E9F0EA] border border-[#C5DAC8] text-[#2D5438] text-xs font-bold uppercase tracking-wider mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-[#4A6B53]" />
-            <span>Structured Fluency Roadmap</span>
+    <section className="w-full py-12 border-t border-[#E8E8DF]/80">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        
+        {/* Section Header */}
+        <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E9F0EA] border border-[#C5DAC8] text-[#2F523A] text-xs font-bold uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Proven 4-Stage Pathway</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#2C2C24]">
-            Your Complete Spoken {language.name} Learning Pathway
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1F2421]">
+            Your Journey to Fluent {language.name}
           </h2>
-          <p className="text-xs sm:text-sm text-[#5A5A40] mt-1">
-            Follow the 7-step proven methodology from initial free diagnosis to certified native-like fluency.
+          <p className="text-sm text-[#555546]">
+            A clear, structured learning progression from initial assessment to verified speaking confidence.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
-          <button
-            type="button"
-            id="open-free-diagnostic-btn"
-            onClick={() => onOpenStep('test')}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#4A6B53] hover:bg-[#3E5A45] text-white font-bold text-xs sm:text-sm transition-all shadow-xs active:scale-98 cursor-pointer"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>Take Free Language Test</span>
-          </button>
-        </div>
-      </div>
+        {/* Clean Horizontal Stepper */}
+        <div className="relative">
+          {/* Connecting Progress Line (Desktop) */}
+          <div className="hidden lg:block absolute top-1/3 left-12 right-12 h-0.5 bg-[#E2E2D6] -z-0" />
 
-      {/* Vertical Step-by-Step Cascading Flowchart with ↓ Connectors */}
-      <div className="pt-6 max-w-4xl mx-auto space-y-3">
-        {steps.map((step, idx) => {
-          const IconComp = step.icon;
-          return (
-            <React.Fragment key={step.id}>
-              {/* Step Card */}
-              <div 
-                onClick={() => onOpenStep(step.id)}
-                className="group relative rounded-xl bg-white border border-[#E3E3D8] hover:border-[#4A6B53] hover:shadow-md p-4 sm:p-5 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-              >
-                {/* Left: Step Number, Icon, & Text */}
-                <div className="flex items-start sm:items-center gap-3.5">
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border border-black/5 shadow-2xs group-hover:scale-105 transition-transform ${step.iconBg}`}>
-                    <IconComp className="w-5 h-5" />
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+            {stages.map((stage) => {
+              return (
+                <div
+                  key={stage.id}
+                  className="rounded-2xl bg-white border border-[#E8E8DF] shadow-[0_4px_20px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col justify-between hover:shadow-md hover:border-[#C5DAC8] transition-all group"
+                >
+                  {/* High-Resolution Photographic Card Header */}
+                  <div className="relative w-full h-36 overflow-hidden bg-[#1F2421]">
+                    <img
+                      src={stage.imageUrl}
+                      alt={stage.title}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span className="font-mono text-xs font-black text-[#8A8A7A]">
-                        STEP {step.num}
-                      </span>
-                      <h3 className="text-sm sm:text-base font-bold text-[#2C2C24] group-hover:text-[#4A6B53] transition-colors">
-                        {step.title}
-                      </h3>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full border ${step.tagColor}`}>
-                        {step.tag}
+                    {/* Step Number Badge */}
+                    <div className="absolute top-3 left-3 w-8 h-8 rounded-xl bg-[#2F523A] text-white font-bold text-xs flex items-center justify-center shadow-md">
+                      {stage.stepNum}
+                    </div>
+
+                    {/* Status Badge */}
+                    <div className="absolute top-3 right-3">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-xs ${stage.badgeColor}`}>
+                        {stage.badge}
                       </span>
                     </div>
 
-                    <p className="text-xs text-[#5A5A40] leading-relaxed">
-                      {step.desc}
-                    </p>
+                    {/* Title Overlay */}
+                    <div className="absolute bottom-2.5 left-3 right-3 text-left">
+                      <h3 className="font-extrabold text-base text-white leading-snug drop-shadow-sm">
+                        {stage.title}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Body Content */}
+                  <div className="p-4 space-y-2.5 text-left flex-1 flex flex-col justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-[#2F523A]">
+                        {stage.subtitle}
+                      </p>
+                      <p className="text-xs text-[#555546] leading-relaxed mt-1">
+                        {stage.desc}
+                      </p>
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="pt-3 border-t border-[#F0EFEB]">
+                      <button
+                        type="button"
+                        onClick={stage.onClick}
+                        className="w-full py-2 px-3 rounded-xl bg-[#FAF9F5] hover:bg-[#E9F0EA] border border-[#DCDCCF] hover:border-[#C5DAC8] text-xs font-bold text-[#1F2421] hover:text-[#2F523A] flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                      >
+                        <span>{stage.actionLabel}</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        </div>
 
-                {/* Right: Action Button / Badge */}
-                <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#F0F0EA]">
-                  <span className="text-[11px] font-semibold text-[#8A8A7A] sm:hidden">
-                    {step.subtitle}
-                  </span>
+        {/* Collapsible Pricing & Certification Details Accordion */}
+        <div className="mt-8 max-w-3xl mx-auto">
+          <button
+            type="button"
+            onClick={() => setAccordionOpen(!accordionOpen)}
+            className="w-full flex items-center justify-between p-4 rounded-2xl bg-white border border-[#E8E8DF] shadow-xs hover:bg-[#FAF9F5] transition-all text-left cursor-pointer"
+          >
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="w-5 h-5 text-[#2D5438]" />
+              <div>
+                <div className="text-xs sm:text-sm font-bold text-[#1F2421]">
+                  View Detailed Certification &amp; Syllabus Specifications
+                </div>
+                <div className="text-[11px] text-[#7A7A68]">
+                  CEFR standard guidelines, evaluation criteria, and lifetime access perks
+                </div>
+              </div>
+            </div>
+            <ChevronDown className={`w-4 h-4 text-[#7A7A68] transition-transform ${accordionOpen ? 'rotate-180' : ''}`} />
+          </button>
 
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (step.id === 'paid_course' && !enrollment.isEnrolled) {
-                        onOpenPaymentModal('Paid Course Enrollment');
-                      } else {
-                        onOpenStep(step.id);
-                      }
-                    }}
-                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      step.id === 'paid_course' && !enrollment.isEnrolled
-                        ? 'bg-[#4A6B53] hover:bg-[#3E5A45] text-white shadow-2xs'
-                        : 'bg-[#FAF9F5] hover:bg-[#EBEBE0] text-[#2C2C24] border border-[#DCDCCF]'
-                    }`}
-                  >
-                    <span>{step.actionText}</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-[#8A8A7A] group-hover:translate-x-0.5 transition-transform" />
-                  </button>
+          {accordionOpen && (
+            <div className="mt-2 p-5 rounded-2xl bg-white border border-[#E8E8DF] text-xs text-[#555546] space-y-3 animate-in fade-in duration-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <div className="font-bold text-[#1F2421]">CEFR Assessment Rubric</div>
+                  <p>All dialogues are evaluated against official European Framework criteria (fluency, grammatical range, lexical resource, and phonetic clarity).</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="font-bold text-[#1F2421]">Verified Digital Certificate</div>
+                  <p>Upon completing your required conversation hours and diagnostic exam, receive an accredited certificate shareable to LinkedIn.</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="font-bold text-[#1F2421]">Full Access Pricing (₹999)</div>
+                  <p>One-time payment for lifetime access to all 8+ languages, 50+ realistic scenarios, and unlimited voice coaching with zero recurring fees.</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="font-bold text-[#1F2421]">Immediate Support &amp; Verification</div>
+                  <p>Official support at support@talktoworld.co.in with instant certificate verification on talktoworld.co.in.</p>
                 </div>
               </div>
 
-              {/* Explicit Down Arrow Indicator (↓) between steps */}
-              {idx < steps.length - 1 && (
-                <div className="flex flex-col items-center justify-center py-1">
-                  <div className="w-0.5 h-3 bg-[#DCDCCF]" />
-                  <div className="w-6 h-6 rounded-full bg-[#FAF9F5] border border-[#DCDCCF] flex items-center justify-center text-[#4A6B53] shadow-2xs my-0.5">
-                    <ArrowDown className="w-3.5 h-3.5 stroke-[2.5]" />
-                  </div>
-                  <div className="w-0.5 h-3 bg-[#DCDCCF]" />
+              {!enrollment.isEnrolled && (
+                <div className="pt-3 border-t border-[#F0EFEB] flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => onOpenPaymentModal()}
+                    className="px-4 py-2 rounded-xl bg-[#2D5438] hover:bg-[#23422C] text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+                  >
+                    Unlock Lifetime Pass for ₹999
+                  </button>
                 </div>
               )}
-            </React.Fragment>
-          );
-        })}
-      </div>
-
-      {/* Pathway Footer Note */}
-      <div className="mt-7 pt-4 border-t border-[#E3E3D8] flex flex-wrap items-center justify-between text-xs text-[#5A5A40] gap-3">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-[#4A6B53]" />
-          <span>CEFR Aligned (A1 to C1) • Immediate Speech Diagnosis • 100% Satisfaction Guaranteed</span>
+            </div>
+          )}
         </div>
 
-        <div className="text-[11px] font-mono text-[#8A8A7A]">
-          Instant UPI &amp; Cards Accepted
-        </div>
       </div>
-    </div>
+    </section>
   );
 };

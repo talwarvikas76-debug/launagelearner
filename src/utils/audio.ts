@@ -54,30 +54,93 @@ export function playPCM24kAudio(base64PCM: string, playbackRate: number = 1.0): 
   });
 }
 
+// Global reference to prevent Chrome garbage-collection of active utterance
+declare global {
+  interface Window {
+    __activeSpeechUtterance?: SpeechSynthesisUtterance | null;
+  }
+}
+
+/**
+ * Stop any active audio and speech synthesis playback immediately.
+ */
+export function stopAllSpeech(): void {
+  try {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      window.__activeSpeechUtterance = null;
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
 // Browser Web Speech Synthesis fallback
 export function speakWithBrowserSynthesis(text: string, langCode: string, rate: number = 1.0): Promise<void> {
   return new Promise((resolve) => {
-    if (!('speechSynthesis' in window)) {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       resolve();
       return;
     }
 
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = langCode;
-    utterance.rate = rate;
+    try {
+      window.speechSynthesis.cancel();
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
 
-    // Try to find a natural voice for this language
-    const voices = window.speechSynthesis.getVoices();
-    const match = voices.find(v => v.lang === langCode || v.lang.startsWith(langCode.split('-')[0]));
-    if (match) {
-      utterance.voice = match;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = langCode;
+      utterance.rate = rate;
+      window.__activeSpeechUtterance = utterance;
+
+      const pickVoice = () => {
+        const voices = window.speechSynthesis.getVoices();
+        if (voices && voices.length > 0) {
+          const primary = langCode.toLowerCase().replace('_', '-');
+          const prefix = primary.split('-')[0];
+          const exactMatch = voices.find((v) => v.lang.toLowerCase().replace('_', '-') === primary);
+          const prefixMatch = voices.find((v) => v.lang.toLowerCase().replace('_', '-').startsWith(prefix));
+          if (exactMatch) {
+            utterance.voice = exactMatch;
+          } else if (prefixMatch) {
+            utterance.voice = prefixMatch;
+          }
+        }
+      };
+
+      pickVoice();
+
+      let isDone = false;
+      const cleanupAndFinish = () => {
+        if (isDone) return;
+        isDone = true;
+        window.__activeSpeechUtterance = null;
+        resolve();
+      };
+
+      // Safeguard duration timeout in case browser event drops
+      const maxDuration = Math.max(3500, Math.ceil(text.length / 4) * 350);
+      const timer = setTimeout(() => {
+        cleanupAndFinish();
+      }, maxDuration);
+
+      const safeDone = () => {
+        clearTimeout(timer);
+        cleanupAndFinish();
+      };
+
+      utterance.onend = safeDone;
+      utterance.onerror = safeDone;
+
+      window.speechSynthesis.speak(utterance);
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+    } catch (err) {
+      console.warn('Speech synthesis notice:', err);
+      resolve();
     }
-
-    utterance.onend = () => resolve();
-    utterance.onerror = () => resolve();
-
-    window.speechSynthesis.speak(utterance);
   });
 }
 
@@ -87,6 +150,7 @@ export async function speakText({
   base64Audio,
   langCode,
   rate = 1.0,
+  voiceName,
   onStart,
   onEnd
 }: {
@@ -94,18 +158,40 @@ export async function speakText({
   base64Audio?: string;
   langCode: string;
   rate?: number;
+  voiceName?: string;
   onStart?: () => void;
   onEnd?: () => void;
 }) {
   onStart?.();
   try {
+    // 1. If pre-generated PCM audio is provided, play it
     if (base64Audio && base64Audio.length > 50) {
       await playPCM24kAudio(base64Audio, rate);
-    } else {
-      await speakWithBrowserSynthesis(text, langCode, rate);
+      return;
     }
+
+    // 2. Try server-side Gemini high fidelity TTS
+    try {
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, voiceName })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.audioBase64) {
+          await playPCM24kAudio(data.audioBase64, rate);
+          return;
+        }
+      }
+    } catch (ttsNetErr) {
+      // Smoothly continue to browser synthesis fallback
+    }
+
+    // 3. Fallback to client browser speech synthesis
+    await speakWithBrowserSynthesis(text, langCode, rate);
   } catch (e) {
-    console.warn('PCM playback failed, fallback to browser synthesis:', e);
+    console.warn('Audio playback notice, attempting browser synthesis:', e);
     await speakWithBrowserSynthesis(text, langCode, rate);
   } finally {
     onEnd?.();

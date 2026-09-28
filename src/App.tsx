@@ -30,16 +30,26 @@ import {
   UserProfile,
   AuthProvider,
   FunnelStepId,
-  UserGoalId
+  UserGoalId,
+  AIPersonalityId,
+  CorrectionModeId,
+  TalkScore,
+  LanguageTestResult
 } from './types';
 import { SUPPORTED_LANGUAGES } from './data/languages';
 import { DEFAULT_SCENARIOS } from './data/scenarios';
 import { speakText } from './utils/audio';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { 
   getDefaultDailyGoal, 
   syncDailyGoalWithDate, 
   recordGoalActivity 
 } from './utils/goalUtils';
+import { 
+  getDefaultTalkScore, 
+  updateTalkScoreFromSession,
+  getTalkScoreTier
+} from './utils/talkScoreUtils';
 
 const STORAGE_KEYS = {
   LANGUAGE: 'fluency_lang_id',
@@ -51,6 +61,9 @@ const STORAGE_KEYS = {
   COURSE_ENROLLMENT: 'fluency_course_enrollment',
   AUTH_USER: 'fluency_auth_user',
   USER_GOAL: 'fluency_user_goal',
+  PERSONALITY: 'fluency_ai_personality',
+  CORRECTION_MODE: 'fluency_correction_mode',
+  TALK_SCORE: 'fluency_talk_score',
 };
 
 export default function App() {
@@ -69,6 +82,29 @@ export default function App() {
   const [currentLevel, setCurrentLevel] = useState<CEFRLevel>(() => {
     return (localStorage.getItem(STORAGE_KEYS.LEVEL) as CEFRLevel) || 'A2';
   });
+
+  // AI Partner Personality & Correction Mode (Speak Module Customization)
+  const [personality, setPersonality] = useState<AIPersonalityId>(() => {
+    return (localStorage.getItem(STORAGE_KEYS.PERSONALITY) as AIPersonalityId) || 'friendly';
+  });
+
+  const [correctionMode, setCorrectionMode] = useState<CorrectionModeId>(() => {
+    return (localStorage.getItem(STORAGE_KEYS.CORRECTION_MODE) as CorrectionModeId) || 'immediate';
+  });
+
+  const handleSelectPersonality = (p: AIPersonalityId) => {
+    setPersonality(p);
+    try {
+      localStorage.setItem(STORAGE_KEYS.PERSONALITY, p);
+    } catch {}
+  };
+
+  const handleSelectCorrectionMode = (m: CorrectionModeId) => {
+    setCorrectionMode(m);
+    try {
+      localStorage.setItem(STORAGE_KEYS.CORRECTION_MODE, m);
+    } catch {}
+  };
 
   // User Learning Goal (1 to 6)
   const [selectedGoalId, setSelectedGoalId] = useState<UserGoalId>(() => {
@@ -140,6 +176,19 @@ export default function App() {
       console.warn('Could not parse daily goal:', e);
     }
     return getDefaultDailyGoal();
+  });
+
+  // TalkScore™ State (Proprietary fluency index 0-100 across 4 pillars)
+  const [talkScore, setTalkScore] = useState<TalkScore>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.TALK_SCORE);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.warn('Could not parse talk score:', e);
+    }
+    return getDefaultTalkScore(currentLevel);
   });
 
   // Course Enrollment State (Payment Gate: Rs. 999/-)
@@ -257,6 +306,10 @@ export default function App() {
   }, [enrollment]);
 
   useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.TALK_SCORE, JSON.stringify(talkScore));
+  }, [talkScore]);
+
+  useEffect(() => {
     if (user) {
       localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));
     } else {
@@ -297,6 +350,26 @@ export default function App() {
 
   const handleStartAssessment = () => {
     handleOpenFunnelStep('test');
+  };
+
+  const handlePlacementTestComplete = (result: LanguageTestResult) => {
+    setCurrentLevel(result.recommendedLevel);
+    const tierInfo = getTalkScoreTier(result.score);
+    setTalkScore({
+      overall: result.score,
+      fluency: result.skillBreakdown.speaking,
+      pronunciation: result.skillBreakdown.speaking,
+      vocabulary: result.skillBreakdown.vocabulary,
+      grammar: result.skillBreakdown.grammar,
+      level: result.recommendedLevel,
+      tierLabel: tierInfo.tier,
+      nextLevelTarget: result.nextLevel,
+      pointsToNextLevel: Math.max(3, 90 - result.score),
+      lastUpdated: new Date().toISOString(),
+      history: [
+        { date: 'Diagnostic Check', score: result.score }
+      ]
+    });
   };
 
   const handleOpenAssistedSpeaker = (phrase?: string, translation?: string, contextSentence?: string) => {
@@ -391,6 +464,8 @@ export default function App() {
           userMessage: `Start roleplay as ${freshScenario.partnerName}`,
           generateAudio: autoPlayAudio,
           voiceName: currentLanguage.defaultVoice,
+          personality,
+          correctionMode,
         }),
       });
 
@@ -465,6 +540,8 @@ export default function App() {
           userMessage: trimmedText,
           generateAudio: autoPlayAudio,
           voiceName: currentLanguage.defaultVoice,
+          personality,
+          correctionMode,
         }),
       });
 
@@ -575,7 +652,7 @@ export default function App() {
       setSessionReport(report);
       setIsSummaryModalOpen(true);
 
-      // Update user stats and daily goal
+      // Update user stats, daily goal, and TalkScore™
       const sessionMinutes = Math.max(1, Math.round(durationSeconds / 60));
       setUserStats((prev) => ({
         ...prev,
@@ -583,6 +660,8 @@ export default function App() {
         totalMinutesPracticed: prev.totalMinutesPracticed + sessionMinutes,
         lastPracticedDate: new Date().toISOString().split('T')[0],
       }));
+
+      setTalkScore((prev) => updateTalkScoreFromSession(prev, report));
 
       setDailyGoal((prev) => {
         const { updatedGoal } = recordGoalActivity(prev, sessionMinutes, 1);
@@ -621,6 +700,8 @@ export default function App() {
         totalMinutesPracticed: prev.totalMinutesPracticed + sessionMinutes,
         lastPracticedDate: new Date().toISOString().split('T')[0],
       }));
+
+      setTalkScore((prev) => updateTalkScoreFromSession(prev, fallbackReport));
 
       setDailyGoal((prev) => {
         const { updatedGoal } = recordGoalActivity(prev, sessionMinutes, 1);
@@ -700,6 +781,7 @@ export default function App() {
         selectedGoalId={selectedGoalId}
         onOpenGoalSelectionModal={() => setIsWelcomeGoalModalOpen(true)}
         onOpenDomainModal={() => setIsDomainModalOpen(true)}
+        talkScore={talkScore}
       />
 
       {/* Main Content: Scenario Selector vs Active Conversation */}
@@ -731,6 +813,14 @@ export default function App() {
             selectedGoalId={selectedGoalId}
             onOpenGoalSelectionModal={() => setIsWelcomeGoalModalOpen(true)}
             onOpenDomainModal={() => setIsDomainModalOpen(true)}
+            personality={personality}
+            onSelectPersonality={handleSelectPersonality}
+            correctionMode={correctionMode}
+            onSelectCorrectionMode={handleSelectCorrectionMode}
+            talkScore={talkScore}
+            userStats={userStats}
+            savedWordsCount={savedWords.filter((w) => w.languageId === currentLanguage.id).length}
+            onOpenVocabBank={() => setIsVocabBankOpen(true)}
           />
         ) : (
           <ConversationView
@@ -751,6 +841,8 @@ export default function App() {
             autoPlayAudio={autoPlayAudio}
             playbackSpeed={playbackSpeed}
             onOpenAssistedSpeaker={handleOpenAssistedSpeaker}
+            personality={personality}
+            correctionMode={correctionMode}
           />
         )}
       </main>
@@ -889,6 +981,7 @@ export default function App() {
         onOpenPaymentModal={(title) => handleOpenPaymentModal(title)}
         onSelectLevel={(level) => setCurrentLevel(level)}
         onOpenLeadMagnets={handleOpenLeadMagnets}
+        onTestComplete={handlePlacementTestComplete}
         initialStep={funnelInitialStep}
       />
 
@@ -939,6 +1032,9 @@ export default function App() {
         isOpen={isDomainModalOpen}
         onClose={() => setIsDomainModalOpen(false)}
       />
+
+      {/* Offline Status Indicator */}
+      <OfflineIndicator />
     </div>
   );
 }

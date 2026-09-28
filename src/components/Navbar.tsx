@@ -20,9 +20,10 @@ import {
   Smartphone,
   Mail
 } from 'lucide-react';
-import { LanguageConfig, CEFRLevel, UserStats, DailyGoal, CourseEnrollment, UserProfile, UserGoalId } from '../types';
+import { LanguageConfig, CEFRLevel, UserStats, DailyGoal, CourseEnrollment, UserProfile, UserGoalId, TalkScore } from '../types';
 import { SUPPORTED_LANGUAGES, CEFR_LEVELS } from '../data/languages';
 import { calculateGoalProgress } from '../utils/goalUtils';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface NavbarProps {
   currentLanguage: LanguageConfig;
@@ -40,7 +41,7 @@ interface NavbarProps {
   onChangePlaybackSpeed: (speed: number) => void;
   onLogoClick: () => void;
   enrollment: CourseEnrollment;
-  onOpenPaymentModal: () => void;
+  onOpenPaymentModal: (targetTitle?: string) => void;
   user?: UserProfile | null;
   onOpenAuthModal: (tab?: 'google' | 'email' | 'phone') => void;
   onSignOut: () => void;
@@ -50,6 +51,7 @@ interface NavbarProps {
   selectedGoalId?: UserGoalId;
   onOpenGoalSelectionModal?: () => void;
   onOpenDomainModal?: () => void;
+  talkScore?: TalkScore;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -76,6 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAssistedSpeaker,
   onOpenLeadMagnets,
   onOpenDomainModal,
+  talkScore,
 }) => {
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -165,8 +168,33 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </nav>
 
-        {/* Right Side: Language Switcher & Profile/Streak/Level Pill */}
-        <div className="flex items-center gap-3">
+        {/* Right Side: PWA Install, TalkScore Pill, Language Switcher & Profile/Streak/Level Pill */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          
+          {/* PWA Install Button */}
+          <PWAInstallButton />
+
+          {/* TalkScore™ Fluency Pill */}
+          <button
+            type="button"
+            id="nav-talkscore-pill-btn"
+            onClick={() => {
+              const el = document.getElementById('daily-goal-tracker-section');
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+                const tabBtn = document.getElementById('tab-talkscore-btn');
+                if (tabBtn) tabBtn.click();
+              }
+            }}
+            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white hover:bg-[#F4F4EE] border border-[#DCDCCF] hover:border-[#B8B8A8] text-xs font-semibold text-[#1F2421] shadow-2xs transition-all cursor-pointer"
+            title="Click to view your TalkScore™ breakdown"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span className="text-[#555546] font-medium text-[11px]">TalkScore™</span>
+            <span className="font-mono font-bold text-[#2D5438] bg-[#E9F0EA] px-1.5 py-0.2 rounded-md text-[11px]">
+              {talkScore?.overall || 82}
+            </span>
+          </button>
           
           {/* Target Language Dropdown Selector */}
           <div className="relative">
@@ -322,6 +350,37 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <LogOut className="w-3.5 h-3.5" />
                       </button>
                     )}
+                  </div>
+
+                  {/* TalkScore Summary inside dropdown */}
+                  <div className="p-3 rounded-xl bg-[#E9F0EA]/60 border border-[#C5DAC8] space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#2D5438] flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                        <span>TalkScore™ Fluency Index</span>
+                      </span>
+                      <span className="font-mono font-bold text-xs text-[#2D5438] bg-white px-2 py-0.5 rounded border border-[#C5DAC8]">
+                        {talkScore?.overall || 82}/100
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-1 text-center pt-1 text-[10px]">
+                      <div className="bg-white p-1 rounded border border-[#E8E8DF]">
+                        <div className="text-[#7A7A68]">Fluency</div>
+                        <div className="font-bold text-[#2D5438] font-mono">{talkScore?.fluency || 84}</div>
+                      </div>
+                      <div className="bg-white p-1 rounded border border-[#E8E8DF]">
+                        <div className="text-[#7A7A68]">Accent</div>
+                        <div className="font-bold text-[#C85A32] font-mono">{talkScore?.pronunciation || 82}</div>
+                      </div>
+                      <div className="bg-white p-1 rounded border border-[#E8E8DF]">
+                        <div className="text-[#7A7A68]">Vocab</div>
+                        <div className="font-bold text-[#326B88] font-mono">{talkScore?.vocabulary || 80}</div>
+                      </div>
+                      <div className="bg-white p-1 rounded border border-[#E8E8DF]">
+                        <div className="text-[#7A7A68]">Grammar</div>
+                        <div className="font-bold text-[#2D5438] font-mono">{talkScore?.grammar || 82}</div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Daily Goal & Streak Metrics Card */}

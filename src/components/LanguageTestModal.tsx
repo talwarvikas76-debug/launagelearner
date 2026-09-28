@@ -58,6 +58,7 @@ interface LanguageTestModalProps {
   onOpenPaymentModal: (targetScenarioTitle?: string) => void;
   onSelectLevel?: (level: CEFRLevel) => void;
   onOpenLeadMagnets?: (productId?: string) => void;
+  onTestComplete?: (result: LanguageTestResult) => void;
   initialStep?: 'test' | 'score' | 'plan' | 'challenge' | 'paid_course' | 'subscription' | 'certification';
 }
 
@@ -73,6 +74,7 @@ export const LanguageTestModal: React.FC<LanguageTestModalProps> = ({
   onOpenPaymentModal,
   onSelectLevel,
   onOpenLeadMagnets,
+  onTestComplete,
   initialStep = 'test'
 }) => {
   const [activeView, setActiveView] = useState<ModalView>(initialStep);
@@ -227,6 +229,7 @@ export const LanguageTestModal: React.FC<LanguageTestModalProps> = ({
 
       setTestResult(result);
       if (onSelectLevel) onSelectLevel(recLevel);
+      if (onTestComplete) onTestComplete(result);
       setActiveView('score');
     }
   };

@@ -332,23 +332,23 @@ export const LanguageSpotlightBanner: React.FC<LanguageSpotlightBannerProps> = (
           {/* Bottom Area: Action Buttons & Quick Language Switcher */}
           <div className="pt-4 border-t border-white/15 space-y-4">
             
-            {/* Action Buttons: Fully Framed with Clear Bounds */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+            {/* Action Buttons: Fully Framed with Clear Bounds - Never Cuts in Half */}
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full">
               <button
                 type="button"
                 id="language-start-speaking-btn"
                 onClick={handleAction}
-                className="flex-shrink-0 px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#1F2421] font-extrabold text-sm sm:text-base transition-all shadow-lg hover:shadow-xl active:scale-98 cursor-pointer flex items-center justify-center gap-2.5 group/btn"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#1F2421] font-extrabold text-sm sm:text-base transition-all shadow-lg hover:shadow-xl active:scale-98 cursor-pointer flex items-center justify-center gap-2.5 group/btn"
               >
                 <MessageSquare className="w-4 h-4 text-[#1F2421] shrink-0" />
-                <span className="whitespace-nowrap">Practice {theme.name} Scenarios</span>
+                <span className="text-center">Practice {theme.name} Scenarios</span>
                 <ArrowRight className="w-4 h-4 text-[#1F2421] shrink-0 group-hover/btn:translate-x-1 transition-transform" />
               </button>
 
               <button
                 type="button"
                 onClick={handlePlaySample}
-                className={`flex-shrink-0 px-5 py-3.5 sm:py-4 rounded-xl backdrop-blur-md border font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm active:scale-98 ${
+                className={`w-full sm:w-auto px-5 sm:px-6 py-3.5 sm:py-4 rounded-xl backdrop-blur-md border font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm active:scale-98 ${
                   isPlayingAudio
                     ? 'bg-emerald-600/90 border-emerald-400 text-white ring-2 ring-emerald-400/50 shadow-lg'
                     : 'bg-white/15 hover:bg-white/25 border-white/25 text-white'
@@ -358,12 +358,12 @@ export const LanguageSpotlightBanner: React.FC<LanguageSpotlightBannerProps> = (
                 {isPlayingAudio ? (
                   <>
                     <VolumeX className="w-4 h-4 text-white shrink-0 animate-pulse" />
-                    <span className="whitespace-nowrap">Stop {theme.name} Audio</span>
+                    <span>Stop {theme.name} Audio</span>
                   </>
                 ) : (
                   <>
                     <Headphones className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span className="whitespace-nowrap">Try {theme.name} Voice Sample</span>
+                    <span>Try {theme.name} Voice Sample</span>
                   </>
                 )}
               </button>

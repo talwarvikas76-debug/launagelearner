@@ -650,5 +650,109 @@ export const DEFAULT_SCENARIOS: Scenario[] = [
       { text: 'Können Sie mir eine nette Kunstgalerie hier in der Nähe empfehlen?', translation: 'Können Sie mir eine nette Kunstgalerie hier in der Nähe empfehlen?' },
       { text: 'Kann ich mit Karte oder kontaktlos bezahlen?', translation: 'Kann ich mit Karte oder kontaktlos bezahlen?' }
     ]
+  },
+  {
+    id: 'university-seminar',
+    title: 'University Seminar & Thesis Debate',
+    category: 'education',
+    level: 'B2',
+    icon: 'GraduationCap',
+    color: 'blue',
+    imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1000&q=85',
+    partnerAvatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+    partnerName: 'Prof. Laurent',
+    partnerRole: 'Department Seminar Chair',
+    userRole: 'Visiting Graduate Student',
+    setting: 'A university seminar room with bookshelves, amphitheater seating, and academic discussion',
+    situation: 'Participate in a university seminar discussion. Present your core thesis argument, defend your research methodology, and respond thoughtfully to academic counterarguments.',
+    objectives: [
+      { id: 'obj-thesis-summary', description: 'Present a concise summary of your research thesis', completed: false },
+      { id: 'obj-method-defense', description: 'Explain your chosen analytical methodology and sources', completed: false },
+      { id: 'obj-counterarg', description: 'Politely address a constructive counterargument raised by the professor', completed: false },
+      { id: 'obj-academic-vocab', description: 'Use formal academic discourse connectors and terminology', completed: false }
+    ],
+    starterPrompts: [
+      { text: 'In our research, we examined the cultural impact of modern language learning.', translation: 'In our research, we examined the cultural impact of modern language learning.' },
+      { text: 'While I understand the counter-argument, the empirical data highlights a clear trend.', translation: 'While I understand the counter-argument, the empirical data highlights a clear trend.' },
+      { text: 'Could we examine the comparative findings from the second case study?', translation: 'Could we examine the comparative findings from the second case study?' }
+    ]
+  },
+  {
+    id: 'study-abroad-housing',
+    title: 'Study Abroad Campus & Roommate Chat',
+    category: 'education',
+    level: 'A2',
+    icon: 'BookOpen',
+    color: 'emerald',
+    imageUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1000&q=85',
+    partnerAvatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+    partnerName: 'Mateo',
+    partnerRole: 'International Exchange Roommate',
+    userRole: 'New International Student',
+    setting: 'A sunny university dorm common area on orientation day',
+    situation: 'You just arrived for your study abroad semester. Meet your international roommate, introduce your background and major, agree on shared dorm chores, and plan a weekend campus tour.',
+    objectives: [
+      { id: 'obj-dorm-intro', description: 'Introduce your name, hometown, and field of study', completed: false },
+      { id: 'obj-dorm-habits', description: 'Discuss morning/evening study routines and quiet hours', completed: false },
+      { id: 'obj-dorm-chores', description: 'Propose a fair rotation for kitchen cleanup and grocery shopping', completed: false },
+      { id: 'obj-dorm-campus', description: 'Plan to attend the campus student club fair together this weekend', completed: false }
+    ],
+    starterPrompts: [
+      { text: 'Hi! So great to finally meet you in person. I am studying international relations.', translation: 'Hi! So great to finally meet you in person. I am studying international relations.' },
+      { text: 'I usually study in the evenings, so quiet hours around 10 PM work great for me.', translation: 'I usually study in the evenings, so quiet hours around 10 PM work great for me.' },
+      { text: 'Should we make a quick list for shared kitchen supplies and groceries?', translation: 'Should we make a quick list for shared kitchen supplies and groceries?' }
+    ]
+  },
+  {
+    id: 'cefr-oral-exam',
+    title: 'CEFR Official Oral Examination',
+    category: 'education',
+    level: 'B1',
+    icon: 'Award',
+    color: 'amber',
+    imageUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1000&q=85',
+    partnerAvatarUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=300&q=80',
+    partnerName: 'Madame Dubois',
+    partnerRole: 'Certified CEFR Oral Examiner',
+    userRole: 'Candidate Taking Speaking Test',
+    setting: 'A formal language institute examination office with recording equipment',
+    situation: 'Practice for your official CEFR speaking assessment (Goethe-Zertifikat, DELE, DELF, JLPT oral, IELTS speaking). Express opinions, justify viewpoints on social trends, and describe personal experiences with confidence.',
+    objectives: [
+      { id: 'obj-exam-intro', description: 'Give a structured self-introduction detailing goals and milestones', completed: false },
+      { id: 'obj-exam-opinion', description: 'Express and justify your opinion on a current social or cultural topic', completed: false },
+      { id: 'obj-exam-experience', description: 'Narrate a memorable past challenge and what you learned from it', completed: false },
+      { id: 'obj-exam-clarify', description: 'Ask the examiner to clarify or rephrase an advanced question if needed', completed: false }
+    ],
+    starterPrompts: [
+      { text: 'Good morning, Madame Examiner. I am ready to begin the speaking section.', translation: 'Good morning, Madame Examiner. I am ready to begin the speaking section.' },
+      { text: 'In my personal experience, language immersion accelerates fluency tremendously.', translation: 'In my personal experience, language immersion accelerates fluency tremendously.' },
+      { text: 'Could you please rephrase that question with an example?', translation: 'Could you please rephrase that question with an example?' }
+    ]
+  },
+  {
+    id: 'academic-advising',
+    title: 'Academic Advising & Course Registration',
+    category: 'education',
+    level: 'B2',
+    icon: 'Library',
+    color: 'indigo',
+    imageUrl: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=1000&q=85',
+    partnerAvatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+    partnerName: 'Dr. Fischer',
+    partnerRole: 'University Academic Advisor',
+    userRole: 'Undergraduate Student Planning Semester',
+    setting: 'An academic dean office lined with journals, university course catalogs, and diploma certificates',
+    situation: 'Meet with your university academic advisor to finalize your upcoming semester curriculum. Inquire about prerequisite waivers, credit transfers, and research internships.',
+    objectives: [
+      { id: 'obj-adv-goals', description: 'Explain your graduation timeline and desired course load', completed: false },
+      { id: 'obj-adv-prereq', description: 'Inquire about waiving a prerequisite course based on prior coursework', completed: false },
+      { id: 'obj-adv-intern', description: 'Ask for advice on university-accredited summer research opportunities', completed: false },
+      { id: 'obj-adv-schedule', description: 'Confirm your balanced weekly class and laboratory schedule', completed: false }
+    ],
+    starterPrompts: [
+      { text: 'Good afternoon, Dr. Fischer. I would like to review my proposed schedule for next term.', translation: 'Good afternoon, Dr. Fischer. I would like to review my proposed schedule for next term.' },
+      { text: 'I completed an equivalent statistics course last year; could I apply for credit transfer?', translation: 'I completed an equivalent statistics course last year; could I apply for credit transfer?' },
+      { text: 'Are there faculty openings for undergraduate research assistants in the language lab?', translation: 'Are there faculty openings for undergraduate research assistants in the language lab?' }
+    ]
   }
 ];

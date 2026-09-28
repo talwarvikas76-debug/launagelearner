@@ -132,17 +132,17 @@ export const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
         {/* Performance Indicators Grid */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#5A5A40]">Core Performance Indicators</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#5A5A40]">TalkScore™ &amp; Core Performance Indicators</span>
             <span className="text-[11px] text-[#2D5438] font-semibold bg-[#E9F0EA] px-2 py-0.5 rounded border border-[#C5DAC8]">
-              CEFR Benchmark: {report.overallScore >= 80 ? 'Proficient' : 'Developing'}
+              CEFR Benchmark: {report.overallScore >= 80 ? 'Proficient [B2]' : 'Developing [A2/B1]'}
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className={`p-4 rounded-xl border flex flex-col items-center justify-center text-center ${getScoreColor(report.overallScore)}`}>
               <div className="text-2xl sm:text-3xl font-mono font-black">{report.overallScore}</div>
-              <div className="text-[11px] font-semibold uppercase tracking-wider mt-1">Overall Score</div>
-              <span className="text-[10px] text-[#5A5A40] mt-0.5 font-medium">Composite Level</span>
+              <div className="text-[11px] font-semibold uppercase tracking-wider mt-1">TalkScore™</div>
+              <span className="text-[10px] text-[#2D5438] mt-0.5 font-bold">+2 pts bonus</span>
             </div>
 
             <div className="p-4 rounded-xl border border-[#E3E3D8] bg-[#FAF9F5] flex flex-col items-center justify-center text-center">

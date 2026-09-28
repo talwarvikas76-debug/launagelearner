@@ -8,9 +8,33 @@ import {
   Compass,
   Briefcase,
   Coffee,
-  RotateCcw
+  RotateCcw,
+  GraduationCap,
+  SlidersHorizontal,
+  Bot,
+  Zap,
+  CheckCheck,
+  CheckCircle2
 } from 'lucide-react';
-import { Scenario, CEFRLevel, LanguageConfig, DailyGoal, GoalMetric, CourseEnrollment, UserProfile, FunnelStepId, UserGoalId } from '../types';
+import { 
+  Scenario, 
+  CEFRLevel, 
+  LanguageConfig, 
+  DailyGoal, 
+  GoalMetric, 
+  CourseEnrollment, 
+  UserProfile, 
+  FunnelStepId, 
+  UserGoalId,
+  AIPersonalityId,
+  CorrectionModeId,
+  TalkScore,
+  UserStats
+} from '../types';
+import { HeroSection } from './HeroSection';
+import { VoicePreviewWidget } from './VoicePreviewWidget';
+import { DailyGoalTracker } from './DailyGoalTracker';
+import { FreeAssessmentSection } from './FreeAssessmentSection';
 import { LanguageSpotlightBanner } from './GermanSpotlightBanner';
 import { LearningPathwayFunnel } from './LearningPathwayFunnel';
 import { PricingSection } from './PricingSection';
@@ -36,9 +60,17 @@ interface ScenarioSelectorProps {
   selectedGoalId?: UserGoalId;
   onOpenGoalSelectionModal?: () => void;
   onOpenDomainModal?: () => void;
+  personality?: AIPersonalityId;
+  onSelectPersonality?: (p: AIPersonalityId) => void;
+  correctionMode?: CorrectionModeId;
+  onSelectCorrectionMode?: (m: CorrectionModeId) => void;
+  talkScore?: TalkScore;
+  userStats?: UserStats;
+  savedWordsCount?: number;
+  onOpenVocabBank?: () => void;
 }
 
-export type ContextFilter = 'all' | 'travel' | 'career' | 'daily';
+export type ContextFilter = 'all' | 'travel' | 'career' | 'daily' | 'education';
 
 const CONTEXT_FILTERS: { 
   id: ContextFilter; 
@@ -60,7 +92,7 @@ const CONTEXT_FILTERS: {
   },
   { 
     id: 'career', 
-    label: 'Career', 
+    label: 'Career & Work', 
     icon: Briefcase,
     description: 'Interviews, client presentations, and business pitching'
   },
@@ -70,6 +102,25 @@ const CONTEXT_FILTERS: {
     icon: Coffee,
     description: 'Cafés, artisan markets, flats, dining, and casual chats'
   },
+  { 
+    id: 'education', 
+    label: 'Education & Study', 
+    icon: GraduationCap,
+    description: 'Seminars, thesis debates, oral exams, roommate chats, and academic advising'
+  },
+];
+
+const PERSONALITY_OPTIONS: { id: AIPersonalityId; name: string; icon: string; desc: string }[] = [
+  { id: 'friendly', name: 'Friendly Native', icon: '🌟', desc: 'Warm, encouraging & patient' },
+  { id: 'strict_tutor', name: 'Strict Tutor', icon: '🎯', desc: 'Precise grammar & pronunciation stickler' },
+  { id: 'casual_peer', name: 'Casual Peer', icon: '☕', desc: 'Slang, idioms & colloquial cadence' },
+  { id: 'business_pro', name: 'Business Pro', icon: '💼', desc: 'Corporate etiquette & formal lexicon' },
+];
+
+const CORRECTION_OPTIONS: { id: CorrectionModeId; name: string; tag: string; desc: string }[] = [
+  { id: 'immediate', name: 'Immediate', tag: 'Turn-by-turn', desc: 'Instant feedback with corrections' },
+  { id: 'fluency_first', name: 'Fluency First', tag: 'Low friction', desc: 'Overlooks small slips for flow' },
+  { id: 'end_of_session', name: 'End-of-Session', tag: 'Immersion', desc: 'Detailed report after wrap-up' },
 ];
 
 export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
@@ -79,14 +130,30 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
   onSelectLanguage,
   onSelectScenario,
   onOpenCustomScenarioModal,
+  dailyGoal,
+  onOpenGoalModal,
+  onQuickUpdateTarget,
   enrollment,
   onOpenPaymentModal,
   user,
   onOpenFunnelStep,
+  onOpenAssistedSpeaker,
+  onOpenLeadMagnets,
   onStartAssessment,
+  selectedGoalId,
+  onOpenGoalSelectionModal,
+  personality = 'friendly',
+  onSelectPersonality,
+  correctionMode = 'immediate',
+  onSelectCorrectionMode,
+  talkScore,
+  userStats,
+  savedWordsCount = 0,
+  onOpenVocabBank,
 }) => {
   const [contextFilter, setContextFilter] = useState<ContextFilter>('all');
   const [levelFilter, setLevelFilter] = useState<CEFRLevel | 'all'>('all');
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
   const handleSwitchToGerman = () => {
     const german = SUPPORTED_LANGUAGES.find((l) => l.id === 'de');
@@ -95,9 +162,10 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
     }
   };
 
-  const getScenarioContext = (scenario: Scenario): 'travel' | 'career' | 'daily' => {
+  const getScenarioContext = (scenario: Scenario): 'travel' | 'career' | 'daily' | 'education' => {
     if (scenario.category === 'travel') return 'travel';
     if (scenario.category === 'business') return 'career';
+    if (scenario.category === 'education') return 'education';
     return 'daily'; // covers daily, dining, social, emergency
   };
 
@@ -138,7 +206,60 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
   return (
     <div className="w-full flex flex-col items-center bg-[#F6F7F2]">
       
-      {/* Dynamic Language Immersion Spotlight Banner with Image and Text Overlay */}
+      {/* 1. Primary Hero Section with Realistic Phone Frame, Audio Preview, & Language Chips */}
+      <HeroSection
+        language={selectedLanguage}
+        starterScenario={starterScenario}
+        onStartFreeTrial={() => {
+          if (starterScenario) handleScenarioClick(starterScenario);
+        }}
+        onOpenDiagnosticTest={onStartAssessment || (() => onOpenFunnelStep('test'))}
+        enrollment={enrollment}
+        onSelectLanguage={onSelectLanguage}
+        selectedGoalId={selectedGoalId}
+        onOpenGoalSelectionModal={onOpenGoalSelectionModal}
+      />
+
+      {/* 2. Daily Practice Goal, TalkScore™ & Daily Missions Tracker */}
+      <div className="w-full pt-8">
+        <DailyGoalTracker
+          goal={dailyGoal}
+          talkScore={talkScore}
+          userStats={userStats}
+          savedWordsCount={savedWordsCount}
+          onOpenGoalModal={onOpenGoalModal}
+          onQuickUpdateTarget={onQuickUpdateTarget}
+          onStartSuggestedPractice={() => {
+            if (starterScenario) handleScenarioClick(starterScenario);
+          }}
+          onOpenPronunciationCoach={onOpenAssistedSpeaker}
+          onOpenVocabBank={onOpenVocabBank}
+        />
+      </div>
+
+      {/* 3. Interactive 10-Second Voice Preview Widget */}
+      <div id="voice-preview-widget" className="w-full">
+        <VoicePreviewWidget
+          language={selectedLanguage}
+          scenario={starterScenario}
+          onLaunchFullScenario={() => {
+            if (starterScenario) handleScenarioClick(starterScenario);
+          }}
+        />
+      </div>
+
+      {/* 4. Certified CEFR Diagnostic Assessment Section */}
+      <div id="free-assessment-section" className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <FreeAssessmentSection
+          language={selectedLanguage}
+          currentLevel={currentLevel}
+          onStartAssessment={onStartAssessment || (() => onOpenFunnelStep('test'))}
+          onOpenLeadMagnets={onOpenLeadMagnets || (() => {})}
+          onOpenPaymentModal={() => onOpenPaymentModal('TalkToWorld Lifetime Pass')}
+        />
+      </div>
+
+      {/* 5. Dynamic Language Immersion Spotlight Banner with Image and Text Overlay */}
       <LanguageSpotlightBanner
         currentLanguage={selectedLanguage}
         onSelectLanguage={onSelectLanguage || handleSwitchToGerman}
@@ -149,7 +270,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
         }}
       />
 
-      {/* 3. Immersive Scenarios Section */}
+      {/* 6. Immersive Scenarios Section */}
       <section id="scenarios-section" className="w-full pt-4 pb-14 sm:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
@@ -227,26 +348,114 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
               })}
             </div>
 
-            {/* Quick Context Summary */}
-            <div className="mt-2.5 px-1 flex items-center justify-between text-xs text-[#7A7A68]">
-              <span>
-                Showing <strong className="text-[#1F2421] font-semibold">{filteredScenarios.length}</strong> {contextFilter === 'all' ? 'total' : contextFilter} {filteredScenarios.length === 1 ? 'scenario' : 'scenarios'}
-                {levelFilter !== 'all' && <> at level <strong className="text-[#1F2421]">{levelFilter}</strong></>}
-              </span>
-              {(contextFilter !== 'all' || levelFilter !== 'all') && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setContextFilter('all');
-                    setLevelFilter('all');
-                  }}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#2F523A] hover:underline cursor-pointer"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>Reset filters</span>
-                </button>
-              )}
+            {/* Quick Context Summary & Speak Module Settings Button */}
+            <div className="mt-2.5 px-1 flex flex-wrap items-center justify-between gap-2 text-xs text-[#7A7A68]">
+              <div className="flex items-center gap-3">
+                <span>
+                  Showing <strong className="text-[#1F2421] font-semibold">{filteredScenarios.length}</strong> {contextFilter === 'all' ? 'total' : contextFilter} {filteredScenarios.length === 1 ? 'scenario' : 'scenarios'}
+                  {levelFilter !== 'all' && <> at level <strong className="text-[#1F2421]">{levelFilter}</strong></>}
+                </span>
+                {(contextFilter !== 'all' || levelFilter !== 'all') && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setContextFilter('all');
+                      setLevelFilter('all');
+                    }}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#2F523A] hover:underline cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset filters</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Toggle Speak Module Customization */}
+              <button
+                type="button"
+                onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white border border-[#E8E8DF] text-[11px] font-bold text-[#2F523A] hover:bg-[#F5F5F0] transition-colors cursor-pointer shadow-2xs"
+              >
+                <SlidersHorizontal className="w-3 h-3" />
+                <span>AI Partner & Correction Mode</span>
+                <span className="text-[10px] bg-[#E9F0EA] px-1.5 py-0.5 rounded text-[#2F523A] uppercase font-mono">
+                  {personality === 'friendly' ? '🌟 Friendly' : personality === 'strict_tutor' ? '🎯 Strict' : personality === 'casual_peer' ? '☕ Casual' : '💼 Business'}
+                </span>
+              </button>
             </div>
+
+            {/* Expandable Speak Module Settings Panel */}
+            {showAdvancedSettings && (
+              <div className="mt-3.5 p-4 sm:p-5 rounded-2xl bg-white border border-[#E8E8DF] shadow-xs text-left animate-fadeIn">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  
+                  {/* AI Personality Selector */}
+                  <div>
+                    <label className="text-xs font-bold text-[#1F2421] flex items-center gap-1.5 mb-2">
+                      <Bot className="w-3.5 h-3.5 text-[#2F523A]" />
+                      <span>AI Partner Personality</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {PERSONALITY_OPTIONS.map((opt) => {
+                        const isChosen = personality === opt.id;
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => onSelectPersonality && onSelectPersonality(opt.id)}
+                            className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                              isChosen
+                                ? 'bg-[#E9F0EA] border-[#2F523A] text-[#1F2421] shadow-2xs'
+                                : 'bg-[#FAF9F5] border-[#E8E8DF] hover:bg-white text-[#555546]'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-base">{opt.icon}</span>
+                              {isChosen && <CheckCircle2 className="w-3.5 h-3.5 text-[#2F523A]" />}
+                            </div>
+                            <div className="text-xs font-bold text-[#1F2421] mt-1">{opt.name}</div>
+                            <div className="text-[10px] text-[#7A7A68] line-clamp-1">{opt.desc}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Correction Mode Selector */}
+                  <div>
+                    <label className="text-xs font-bold text-[#1F2421] flex items-center gap-1.5 mb-2">
+                      <Zap className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Correction & Coaching Mode</span>
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {CORRECTION_OPTIONS.map((mode) => {
+                        const isChosen = correctionMode === mode.id;
+                        return (
+                          <button
+                            key={mode.id}
+                            type="button"
+                            onClick={() => onSelectCorrectionMode && onSelectCorrectionMode(mode.id)}
+                            className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                              isChosen
+                                ? 'bg-[#E9F0EA] border-[#2F523A] text-[#1F2421] shadow-2xs'
+                                : 'bg-[#FAF9F5] border-[#E8E8DF] hover:bg-white text-[#555546]'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-mono uppercase text-[#7A7A68]">{mode.tag}</span>
+                              {isChosen && <CheckCircle2 className="w-3.5 h-3.5 text-[#2F523A]" />}
+                            </div>
+                            <div className="text-xs font-bold text-[#1F2421] mt-1">{mode.name}</div>
+                            <div className="text-[10px] text-[#7A7A68] mt-0.5 line-clamp-2">{mode.desc}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Empty State if filter combination has no matches */}

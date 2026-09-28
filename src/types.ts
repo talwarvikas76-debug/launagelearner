@@ -13,7 +13,27 @@ export interface LanguageConfig {
   samplePhrases: string[];
 }
 
-export type ScenarioCategory = 'travel' | 'dining' | 'daily' | 'business' | 'social' | 'emergency' | 'custom';
+export type ScenarioCategory = 'travel' | 'dining' | 'daily' | 'business' | 'social' | 'emergency' | 'education' | 'custom';
+
+export type AIPersonalityId = 'friendly' | 'strict_tutor' | 'casual_peer' | 'business_pro';
+
+export interface AIPersonality {
+  id: AIPersonalityId;
+  name: string;
+  tagline: string;
+  avatarIcon: string;
+  description: string;
+  promptInstructions: string;
+}
+
+export type CorrectionModeId = 'immediate' | 'fluency_first' | 'end_of_session';
+
+export interface CorrectionModeConfig {
+  id: CorrectionModeId;
+  name: string;
+  tagline: string;
+  description: string;
+}
 
 export interface ScenarioObjective {
   id: string;
@@ -102,12 +122,40 @@ export interface SessionReport {
   totalObjectivesCount: number;
 }
 
+export interface TalkScore {
+  overall: number; // 0-100
+  fluency: number; // 0-100
+  pronunciation: number; // 0-100
+  vocabulary: number; // 0-100
+  grammar: number; // 0-100
+  level: CEFRLevel;
+  tierLabel: string;
+  nextLevelTarget: CEFRLevel;
+  pointsToNextLevel: number;
+  lastUpdated: string;
+  history: { date: string; score: number }[];
+}
+
+export interface DailyMission {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  targetCount: number;
+  currentCount: number;
+  unit: string;
+  completed: boolean;
+  xpReward: number;
+}
+
 export interface UserStats {
   totalMinutesPracticed: number;
   conversationsCompleted: number;
   wordsLearned: number;
   streakDays: number;
   lastPracticedDate: string;
+  talkScore?: TalkScore;
+  streakShieldActive?: boolean;
 }
 
 export type GoalMetric = 'minutes' | 'conversations';

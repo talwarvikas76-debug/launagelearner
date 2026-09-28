@@ -39,7 +39,7 @@ async function generateWithRetry(params: any, retries = 3, initialDelay = 350) {
   const currentParams = { ...params };
   const client = getGeminiClient();
 
-  const modelFallbackOrder = ['gemini-3.7-flash', 'gemini-flash-latest', 'gemini-3.1-flash-lite'];
+  const modelFallbackOrder = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.1-flash-lite'];
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
@@ -116,7 +116,9 @@ app.post('/api/chat', async (req, res) => {
       userMessage = '',
       isInitialGreeting = false,
       generateAudio = true,
-      voiceName = 'Kore'
+      voiceName = 'Kore',
+      personality = 'friendly',
+      correctionMode = 'immediate',
     } = req.body;
 
     const langName = targetLanguage?.name || 'Spanish';
@@ -124,6 +126,20 @@ app.post('/api/chat', async (req, res) => {
     const hasRomanization = Boolean(targetLanguage?.hasRomanization);
     const romanizationType = targetLanguage?.romanizationLabel || 'Phonetics';
     const isOpening = isInitialGreeting || messages.length === 0;
+
+    const personalityInstruction = personality === 'strict_tutor'
+      ? 'PERSONA BEHAVIOR: STRICT TUTOR & PRONUNCIATION COACH. Maintain rigorous pedagogical standards, highlight exact grammatical and pronunciation nuances, and deliver scholarly, detailed corrections.'
+      : personality === 'casual_peer'
+      ? 'PERSONA BEHAVIOR: CASUAL LOCAL PEER. Use conversational slang, natural idioms, colloquial interjections, and an informal, friendly cadence as if hanging out at a café.'
+      : personality === 'business_pro'
+      ? 'PERSONA BEHAVIOR: EXECUTIVE BUSINESS PROFESSIONAL. Maintain high-register corporate etiquette, formal diplomatic vocabulary, polished professional demeanor, and structured arguments.'
+      : 'PERSONA BEHAVIOR: FRIENDLY NATIVE SPEAKER. Warm, patient, highly encouraging, celebrates user attempts, and fosters confidence.';
+
+    const correctionInstruction = correctionMode === 'fluency_first'
+      ? 'CORRECTION BEHAVIOR: FLUENCY FIRST. Only flag severe communicative breakdowns that obscure meaning; overlook minor inflection or agreement errors to preserve conversational flow.'
+      : correctionMode === 'end_of_session'
+      ? 'CORRECTION BEHAVIOR: END-OF-SESSION REVIEW. Prioritize total immersive flow; do not interrupt with in-turn grammar errors unless the user asks.'
+      : 'CORRECTION BEHAVIOR: IMMEDIATE GENTLE COACHING. Check for grammatical mistakes, unnatural phrasing, or tense errors. Provide corrections, natural alternative, and a friendly explanation.';
 
     const systemPrompt = `You are a real-time conversational language learning partner and native speaker tutor.
 TARGET LANGUAGE: ${langName} (${langNative})
@@ -133,6 +149,9 @@ YOUR ROLE / PERSONA: ${scenario?.partnerRole || 'Native Friend'} named ${scenari
 STUDENT'S ROLE: ${scenario?.userRole || 'Language Learner'}
 SETTING & SITUATION: ${scenario?.setting || 'Relaxed setting'}. ${scenario?.situation || ''}
 ${scenario?.systemPromptAddition || ''}
+
+${personalityInstruction}
+${correctionInstruction}
 
 ACTIVE OBJECTIVES FOR THIS ROLEPLAY:
 ${(scenario?.objectives || [])
@@ -176,7 +195,7 @@ PEDAGOGICAL INSTRUCTIONS:
       }
 
       const response = await generateWithRetry({
-        model: 'gemini-3.7-flash',
+        model: 'gemini-3.8-flash',
         contents,
         config: {
           systemInstruction: systemPrompt,

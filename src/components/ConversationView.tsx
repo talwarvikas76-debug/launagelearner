@@ -28,7 +28,9 @@ import {
   LanguageConfig, 
   CEFRLevel, 
   ChatMessage, 
-  SavedWord 
+  SavedWord,
+  AIPersonalityId,
+  CorrectionModeId
 } from '../types';
 import { speakText, createSpeechRecognizer } from '../utils/audio';
 
@@ -48,6 +50,8 @@ interface ConversationViewProps {
   autoPlayAudio: boolean;
   playbackSpeed: number;
   onOpenAssistedSpeaker?: (phrase: string, translation?: string, contextSentence?: string) => void;
+  personality?: AIPersonalityId;
+  correctionMode?: CorrectionModeId;
 }
 
 export const ConversationView: React.FC<ConversationViewProps> = ({
@@ -66,6 +70,8 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
   autoPlayAudio,
   playbackSpeed,
   onOpenAssistedSpeaker,
+  personality = 'friendly',
+  correctionMode = 'immediate',
 }) => {
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -226,11 +232,15 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
             </div>
 
             <div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="font-bold text-sm sm:text-base text-[#2C2C24]">{scenario.partnerName}</span>
                 <span className="text-xs text-[#5A5A40] hidden sm:inline">({scenario.partnerRole})</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#EBEBE0] text-[#3D3D30] font-mono">
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#EBEBE0] text-[#3D3D30] font-mono">
                   {level}
+                </span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E9F0EA] text-[#2F523A] font-semibold flex items-center gap-1">
+                  <span>{personality === 'strict_tutor' ? '🎯 Strict Tutor' : personality === 'casual_peer' ? '☕ Casual Peer' : personality === 'business_pro' ? '💼 Business Pro' : '🌟 Friendly'}</span>
+                  <span className="opacity-60">• {correctionMode === 'fluency_first' ? 'Fluency' : correctionMode === 'end_of_session' ? 'Review Later' : 'Instant Coach'}</span>
                 </span>
               </div>
               <p className="text-xs text-[#4A6B53] font-medium truncate max-w-[200px] sm:max-w-md">
